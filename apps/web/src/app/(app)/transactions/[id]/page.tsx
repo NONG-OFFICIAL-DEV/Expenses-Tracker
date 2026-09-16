@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Copy, Pencil, Trash2 } from "lucide-react";
-import { formatAmount } from "@expense-tracker/shared";
+import { formatAmount } from "@/lib/shared";
 import { Button } from "@/components/ui/button";
 import { useTransaction, useDeleteTransaction, useDuplicateTransaction } from "@/hooks/use-transactions";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";

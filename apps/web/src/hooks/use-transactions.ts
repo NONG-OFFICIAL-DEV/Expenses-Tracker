@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateTransactionInput, UpdateTransactionInput, TransactionFiltersInput } from "@expense-tracker/shared";
+import type { CreateTransactionInput, UpdateTransactionInput, TransactionFiltersInput } from "@/lib/shared";
 import { api } from "@/lib/api-client";
 import type { Transaction, TransactionListResponse } from "@/lib/types";
 import { toQueryString } from "@/lib/query-string";

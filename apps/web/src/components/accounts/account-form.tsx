@@ -2,7 +2,7 @@
 
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createAccountSchema, ACCOUNT_TYPES, type CreateAccountInput } from "@expense-tracker/shared";
+import { createAccountSchema, ACCOUNT_TYPES, type CreateAccountInput } from "@/lib/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CreateAccountInput } from "@expense-tracker/shared";
+import type { CreateAccountInput } from "@/lib/shared";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AccountForm } from "./account-form";
 import { useCreateAccount, useUpdateAccount } from "@/hooks/use-accounts";

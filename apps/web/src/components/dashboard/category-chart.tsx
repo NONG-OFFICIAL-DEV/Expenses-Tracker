@@ -1,7 +1,7 @@
 "use client";
 
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { formatAmount } from "@expense-tracker/shared";
+import { formatAmount } from "@/lib/shared";
 import { CATEGORICAL_LIGHT } from "@/lib/chart-colors";
 import type { CategoryBreakdownEntry } from "@/lib/types";
 

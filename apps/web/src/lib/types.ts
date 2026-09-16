@@ -1,4 +1,4 @@
-import type { AccountType, TransactionType, CategoryKind } from "@expense-tracker/shared";
+import type { AccountType, TransactionType, CategoryKind } from "@/lib/shared";
 
 export interface User {
   id: string;

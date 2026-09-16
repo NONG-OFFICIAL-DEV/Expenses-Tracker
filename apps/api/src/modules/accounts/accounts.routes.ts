@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { createAccountSchema, updateAccountSchema, reconcileAccountSchema } from "@expense-tracker/shared";
+import { createAccountSchema, updateAccountSchema, reconcileAccountSchema } from "../../shared/index.js";
 import * as accountsService from "./accounts.service.js";
 
 const idParamSchema = z.object({ id: z.string().cuid() });

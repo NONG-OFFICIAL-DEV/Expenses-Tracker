@@ -1,7 +1,7 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { formatAmount } from "@expense-tracker/shared";
+import { formatAmount } from "@/lib/shared";
 import { INCOME_COLOR, EXPENSE_COLOR } from "@/lib/chart-colors";
 import type { DashboardSummary } from "@/lib/types";
 

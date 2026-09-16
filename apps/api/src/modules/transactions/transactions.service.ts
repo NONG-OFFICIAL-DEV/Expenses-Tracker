@@ -1,12 +1,12 @@
 import type { PrismaClient, Prisma as PrismaNamespace, Account } from "@prisma/client";
-import { Prisma } from "@prisma/client";
 import type {
   CreateTransactionInput,
   UpdateTransactionInput,
   TransactionFiltersInput,
-} from "@expense-tracker/shared";
-import { formatAmount } from "@expense-tracker/shared";
+} from "../../shared/index.js";
+import { formatAmount } from "../../shared/index.js";
 import { computeAccountBalance } from "../accounts/accounts.service.js";
+import { Decimal } from "../../lib/decimal.js";
 
 export class NotFoundError extends Error {}
 export class ValidationError extends Error {}
@@ -20,7 +20,7 @@ async function assertAccountOwnership(prisma: PrismaClient, userId: string, acco
 async function assertSufficientBalanceForTransfer(
   prisma: PrismaClient,
   account: Account,
-  amount: Prisma.Decimal,
+  amount: Decimal,
   excludeTransactionId?: string
 ) {
   if (account.type === "CREDIT_CARD") return;
@@ -44,7 +44,7 @@ export async function createTransaction(prisma: PrismaClient, userId: string, in
 
   if (input.type === "TRANSFER") {
     await assertAccountOwnership(prisma, userId, input.toAccountId!);
-    await assertSufficientBalanceForTransfer(prisma, account, new Prisma.Decimal(input.amount));
+    await assertSufficientBalanceForTransfer(prisma, account, new Decimal(input.amount));
   } else {
     await assertCategoryUsable(prisma, userId, input.categoryId!, input.type);
   }
@@ -56,7 +56,7 @@ export async function createTransaction(prisma: PrismaClient, userId: string, in
       toAccountId: input.type === "TRANSFER" ? input.toAccountId : null,
       categoryId: input.type === "TRANSFER" ? null : input.categoryId,
       type: input.type,
-      amount: new Prisma.Decimal(input.amount),
+      amount: new Decimal(input.amount),
       date: input.date,
       merchant: input.merchant ?? null,
       note: input.note ?? null,
@@ -82,7 +82,7 @@ export async function updateTransaction(prisma: PrismaClient, userId: string, id
   const nextAccountId = input.accountId ?? existing.accountId;
   const nextToAccountId = input.toAccountId !== undefined ? input.toAccountId : existing.toAccountId;
   const nextCategoryId = input.categoryId !== undefined ? input.categoryId : existing.categoryId;
-  const nextAmount = input.amount !== undefined ? new Prisma.Decimal(input.amount) : existing.amount;
+  const nextAmount = input.amount !== undefined ? new Decimal(input.amount) : existing.amount;
 
   const account = await assertAccountOwnership(prisma, userId, nextAccountId);
 
@@ -103,7 +103,7 @@ export async function updateTransaction(prisma: PrismaClient, userId: string, id
       accountId: nextAccountId,
       toAccountId: nextType === "TRANSFER" ? nextToAccountId : null,
       categoryId: nextType === "TRANSFER" ? null : nextCategoryId,
-      amount: input.amount !== undefined ? new Prisma.Decimal(input.amount) : undefined,
+      amount: input.amount !== undefined ? new Decimal(input.amount) : undefined,
       date: input.date,
       merchant: input.merchant,
       note: input.note,

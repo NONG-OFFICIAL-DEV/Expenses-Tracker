@@ -1,6 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
-import { Prisma } from "@prisma/client";
-import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "@expense-tracker/shared";
+import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "../../shared/index.js";
+import { Decimal } from "../../lib/decimal.js";
 
 export class NotFoundError extends Error {}
 
@@ -8,7 +8,7 @@ export async function computeAccountBalance(
   prisma: PrismaClient,
   accountId: string,
   excludeTransactionId?: string
-): Promise<Prisma.Decimal> {
+): Promise<Decimal> {
   const account = await prisma.account.findUniqueOrThrow({ where: { id: accountId } });
   const notExcluded = excludeTransactionId ? { id: { not: excludeTransactionId } } : {};
 
@@ -52,7 +52,7 @@ export function createAccount(prisma: PrismaClient, userId: string, input: Creat
       name: input.name,
       type: input.type,
       currency: input.currency,
-      openingBalance: new Prisma.Decimal(input.openingBalance),
+      openingBalance: new Decimal(input.openingBalance),
     },
   });
 }
@@ -67,7 +67,7 @@ export async function updateAccount(prisma: PrismaClient, userId: string, accoun
       type: input.type,
       currency: input.currency,
       isActive: input.isActive,
-      openingBalance: input.openingBalance !== undefined ? new Prisma.Decimal(input.openingBalance) : undefined,
+      openingBalance: input.openingBalance !== undefined ? new Decimal(input.openingBalance) : undefined,
     },
   });
 }
@@ -83,7 +83,7 @@ export async function reconcileAccount(prisma: PrismaClient, userId: string, acc
   if (!existing) throw new NotFoundError("Account not found");
 
   const calculatedBalance = await computeAccountBalance(prisma, accountId);
-  const actualBalance = new Prisma.Decimal(input.actualBalance);
+  const actualBalance = new Decimal(input.actualBalance);
   const difference = actualBalance.minus(calculatedBalance);
 
   return prisma.balanceAdjustment.create({

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatAmount } from "@expense-tracker/shared";
+import { formatAmount } from "@/lib/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AccountWithBalance } from "@/lib/types";
 

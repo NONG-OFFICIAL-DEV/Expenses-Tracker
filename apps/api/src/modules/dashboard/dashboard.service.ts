@@ -1,8 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
-import { Prisma } from "@prisma/client";
-import type { DashboardQueryInput } from "@expense-tracker/shared";
+import type { DashboardQueryInput } from "../../shared/index.js";
 import { monthRange, previousMonth } from "../../lib/dates.js";
 import { computeAccountBalance } from "../accounts/accounts.service.js";
+import { Decimal } from "../../lib/decimal.js";
 
 async function monthTotals(prisma: PrismaClient, userId: string, year: number, month: number) {
   const { start, end } = monthRange(year, month);
@@ -16,8 +16,8 @@ async function monthTotals(prisma: PrismaClient, userId: string, year: number, m
       _sum: { amount: true },
     }),
   ]);
-  const incomeTotal = income._sum.amount ?? new Prisma.Decimal(0);
-  const expenseTotal = expense._sum.amount ?? new Prisma.Decimal(0);
+  const incomeTotal = income._sum.amount ?? new Decimal(0);
+  const expenseTotal = expense._sum.amount ?? new Decimal(0);
   return { income: incomeTotal, expense: expenseTotal, net: incomeTotal.minus(expenseTotal) };
 }
 
@@ -34,7 +34,7 @@ async function categoryBreakdown(prisma: PrismaClient, userId: string, year: num
     : [];
   const parentNameById = new Map(parents.map((p) => [p.id, p.name]));
 
-  const totals = new Map<string, { categoryId: string; name: string; total: Prisma.Decimal }>();
+  const totals = new Map<string, { categoryId: string; name: string; total: Decimal }>();
   for (const tx of transactions) {
     if (!tx.category) continue;
     const rollupId = tx.category.parentId ?? tx.category.id;
@@ -66,7 +66,7 @@ export async function getDashboardSummary(prisma: PrismaClient, userId: string, 
   ]);
 
   const balances = await Promise.all(accounts.map((a) => computeAccountBalance(prisma, a.id)));
-  const totalBalance = balances.reduce((sum, b) => sum.plus(b), new Prisma.Decimal(0));
+  const totalBalance = balances.reduce((sum, b) => sum.plus(b), new Decimal(0));
 
   return {
     year,

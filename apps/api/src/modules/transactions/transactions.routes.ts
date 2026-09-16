@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { createTransactionSchema, updateTransactionSchema, transactionFiltersSchema } from "@expense-tracker/shared";
+import { createTransactionSchema, updateTransactionSchema, transactionFiltersSchema } from "../../shared/index.js";
 import * as transactionsService from "./transactions.service.js";
 
 const idParamSchema = z.object({ id: z.string().cuid() });

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { registerSchema, loginSchema } from "@expense-tracker/shared";
+import { registerSchema, loginSchema } from "../../shared/index.js";
 import { registerUser, verifyCredentials, toPublicUser, AuthError } from "./auth.service.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken, REFRESH_COOKIE_MAX_AGE_SECONDS } from "../../lib/jwt.js";
 import { env } from "../../config/env.js";

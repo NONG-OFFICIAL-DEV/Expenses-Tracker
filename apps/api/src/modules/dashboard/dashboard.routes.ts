@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { dashboardQuerySchema } from "@expense-tracker/shared";
+import { dashboardQuerySchema } from "../../shared/index.js";
 import { getDashboardSummary } from "./dashboard.service.js";
 
 export default async function dashboardRoutes(fastify: FastifyInstance) {

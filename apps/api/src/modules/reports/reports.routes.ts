@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { monthlyReportQuerySchema } from "@expense-tracker/shared";
+import { monthlyReportQuerySchema } from "../../shared/index.js";
 import { getMonthlyReport } from "./reports.service.js";
 
 export default async function reportsRoutes(fastify: FastifyInstance) {

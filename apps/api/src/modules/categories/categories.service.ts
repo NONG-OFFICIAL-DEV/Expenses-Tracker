@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateCategoryInput, UpdateCategoryInput } from "@expense-tracker/shared";
+import type { CreateCategoryInput, UpdateCategoryInput } from "../../shared/index.js";
 
 export class NotFoundError extends Error {}
 export class ValidationError extends Error {}

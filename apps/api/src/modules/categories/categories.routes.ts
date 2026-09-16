@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { createCategorySchema, updateCategorySchema } from "@expense-tracker/shared";
+import { createCategorySchema, updateCategorySchema } from "../../shared/index.js";
 import * as categoriesService from "./categories.service.js";
 
 const idParamSchema = z.object({ id: z.string().cuid() });

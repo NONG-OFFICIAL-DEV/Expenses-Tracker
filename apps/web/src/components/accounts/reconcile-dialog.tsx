@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { reconcileAccountSchema, type ReconcileAccountInput } from "@expense-tracker/shared";
+import { reconcileAccountSchema, type ReconcileAccountInput } from "@/lib/shared";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import type { MonthlyReportQueryInput } from "@expense-tracker/shared";
+import type { MonthlyReportQueryInput } from "../../shared/index.js";
 
 export async function getMonthlyReport(prisma: PrismaClient, userId: string, query: MonthlyReportQueryInput) {
   const year = query.year ?? new Date().getUTCFullYear();

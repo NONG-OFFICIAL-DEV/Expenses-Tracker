@@ -1,10 +1,14 @@
-import { Prisma } from "@prisma/client";
+import PrismaPkg from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-export function toDecimal(value: number | string): Prisma.Decimal {
-  return new Prisma.Decimal(value);
+export const Decimal = PrismaPkg.Prisma.Decimal;
+export type Decimal = Prisma.Decimal;
+
+export function toDecimal(value: number | string): Decimal {
+  return new Decimal(value);
 }
 
-export function decimalToNumber(value: Prisma.Decimal | number | null | undefined): number {
+export function decimalToNumber(value: Decimal | number | null | undefined): number {
   if (value === null || value === undefined) return 0;
   return typeof value === "number" ? value : value.toNumber();
 }

@@ -1,5 +1,4 @@
 node_modules/
-.pnpm-store/
 dist/
 build/
 .next/
@@ -8,4 +7,3 @@ build/
 *.log
 .DS_Store
 apps/api/prisma/dev.db
-.turbo/

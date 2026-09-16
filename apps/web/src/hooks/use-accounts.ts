@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "@expense-tracker/shared";
+import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "@/lib/shared";
 import { api } from "@/lib/api-client";
 import type { AccountWithBalance, BalanceAdjustment } from "@/lib/types";
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from "lucide-react";
-import { formatAmount } from "@expense-tracker/shared";
+import { formatAmount } from "@/lib/shared";
 import type { Transaction } from "@/lib/types";
 
 const TYPE_ICON = {

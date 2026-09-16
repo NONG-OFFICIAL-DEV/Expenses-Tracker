@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import type { RegisterInput, LoginInput } from "@expense-tracker/shared";
+import type { RegisterInput, LoginInput } from "@/lib/shared";
 import { api, setAccessToken, refreshAccessToken, ApiError } from "./api-client";
 import type { User } from "./types";
 
