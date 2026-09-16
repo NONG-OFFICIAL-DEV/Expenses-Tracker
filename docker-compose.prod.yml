@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:16
+    container_name: expense_tracker_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,30 +14,41 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - internal
 
   api:
     image: ghcr.io/nong-official-dev/expenses-tracker-api:latest
+    container_name: expense_tracker_api
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@expense_tracker_db:5432/${POSTGRES_DB}?schema=public
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       WEB_ORIGIN: ${WEB_ORIGIN}
       API_PORT: 4000
       NODE_ENV: production
-    ports:
-      - "4000:4000"
+    networks:
+      - web
+      - internal
 
   web:
     image: ghcr.io/nong-official-dev/expenses-tracker-web:latest
+    container_name: expense_tracker_web
     restart: unless-stopped
     depends_on:
       - api
-    ports:
-      - "80:3000"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
+  internal:
+    driver: bridge
 
 volumes:
   pgdata:
