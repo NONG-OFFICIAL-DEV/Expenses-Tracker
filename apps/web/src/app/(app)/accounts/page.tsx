@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Wallet } from "lucide-react";
+import { Loader2, Plus, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAccounts } from "@/hooks/use-accounts";
@@ -25,7 +25,10 @@ export default function AccountsPage() {
       </div>
 
       {isLoading ? (
-        <p className="py-12 text-center text-sm text-neutral-500">Loading accounts...</p>
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+          Loading accounts...
+        </div>
       ) : !accounts || accounts.length === 0 ? (
         <EmptyState
           icon={Wallet}
@@ -43,7 +46,7 @@ export default function AccountsPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {accounts.map((account) => (
             <AccountCard key={account.id} account={account} />
           ))}

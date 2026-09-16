@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Receipt } from "lucide-react";
+import { Loader2, Receipt } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { TransactionListItem } from "@/components/transactions/transaction-list-item";
@@ -47,7 +47,10 @@ export default function TransactionsPage() {
       <h1 className="text-2xl font-semibold">Transactions</h1>
 
       {isLoading ? (
-        <p className="py-12 text-center text-sm text-neutral-500">Loading transactions...</p>
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+          Loading transactions...
+        </div>
       ) : !hasAccounts ? (
         <EmptyState
           icon={Receipt}
@@ -65,7 +68,7 @@ export default function TransactionsPage() {
         <div ref={scrollRef} className="flex max-h-[calc(100vh-220px)] flex-col gap-4 overflow-y-auto pr-1">
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
-              <p className="sticky top-0 bg-neutral-50 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              <p className="sticky top-0 bg-white py-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 {group.label}
               </p>
               {group.items.map((tx) => (
@@ -75,7 +78,10 @@ export default function TransactionsPage() {
           ))}
           <div ref={sentinelRef} />
           {isFetchingNextPage && (
-            <p className="py-2 text-center text-xs text-neutral-400">Loading more...</p>
+            <div className="flex items-center justify-center gap-1.5 py-2 text-xs text-neutral-400">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Loading more...
+            </div>
           )}
         </div>
       )}

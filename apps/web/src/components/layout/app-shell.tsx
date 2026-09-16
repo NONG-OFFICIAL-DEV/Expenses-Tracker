@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Sidebar } from "./sidebar";
 import { BottomNav } from "./bottom-nav";
@@ -17,7 +18,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [isLoading, user, router]);
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-neutral-500">Loading...</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-sm text-neutral-500">
+        <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+        Loading...
+      </div>
+    );
   }
 
   if (!user) return null;
@@ -25,8 +31,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1">
-        <main className="mx-auto max-w-5xl px-4 py-6 pb-24 sm:pb-6">{children}</main>
+      <div className="min-w-0 flex-1">
+        <main className="mx-auto max-w-5xl min-w-0 overflow-x-hidden px-4 py-6 pb-24 sm:px-6 sm:pb-6 lg:px-8">{children}</main>
       </div>
       <BottomNav />
       <FloatingAddButton />

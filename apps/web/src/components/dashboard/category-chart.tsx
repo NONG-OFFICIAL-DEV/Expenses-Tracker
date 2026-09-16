@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatAmount } from "@/lib/shared";
-import { CATEGORICAL_LIGHT } from "@/lib/chart-colors";
+import { CATEGORICAL_LIGHT, CHART_AXIS_TEXT_COLOR, CHART_GRID_COLOR, CHART_LABEL_TEXT_COLOR } from "@/lib/chart-colors";
 import type { CategoryBreakdownEntry } from "@/lib/types";
 
 interface CategoryChartProps {
@@ -29,11 +29,11 @@ export function CategoryChart({ data, currency }: CategoryChartProps) {
           width={120}
           tickLine={false}
           axisLine={false}
-          tick={{ fontSize: 12, fill: "#52514e" }}
+          tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }}
         />
         <Tooltip
           formatter={(value: number) => formatAmount(value, currency)}
-          contentStyle={{ borderRadius: 8, borderColor: "#e1e0d9", fontSize: 12 }}
+          contentStyle={{ borderRadius: 8, borderColor: CHART_GRID_COLOR, fontSize: 12 }}
         />
         <Bar dataKey="total" radius={[4, 4, 4, 4]} barSize={20}>
           {chartData.map((entry) => (
@@ -43,7 +43,7 @@ export function CategoryChart({ data, currency }: CategoryChartProps) {
             dataKey="total"
             position="right"
             formatter={(value: number) => formatAmount(value, currency)}
-            style={{ fontSize: 12, fill: "#0b0b0b" }}
+            style={{ fontSize: 12, fill: CHART_LABEL_TEXT_COLOR }}
           />
         </Bar>
       </BarChart>

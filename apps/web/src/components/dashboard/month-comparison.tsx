@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatAmount } from "@/lib/shared";
-import { INCOME_COLOR, EXPENSE_COLOR } from "@/lib/chart-colors";
+import { INCOME_COLOR, EXPENSE_COLOR, CHART_AXIS_LINE_COLOR, CHART_AXIS_TEXT_COLOR, CHART_GRID_COLOR } from "@/lib/chart-colors";
 import type { DashboardSummary } from "@/lib/types";
 
 const MONTH_NAMES = [
@@ -31,10 +31,10 @@ export function MonthComparison({ summary, currency }: MonthComparisonProps) {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-        <CartesianGrid vertical={false} stroke="#e1e0d9" />
-        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#c3c2b7" }} tick={{ fontSize: 12, fill: "#898781" }} />
-        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "#898781" }} width={48} />
-        <Tooltip formatter={(value: number) => formatAmount(value, currency)} contentStyle={{ borderRadius: 8, borderColor: "#e1e0d9", fontSize: 12 }} />
+        <CartesianGrid vertical={false} stroke={CHART_GRID_COLOR} />
+        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: CHART_AXIS_LINE_COLOR }} tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }} />
+        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }} width={48} />
+        <Tooltip formatter={(value: number) => formatAmount(value, currency)} contentStyle={{ borderRadius: 8, borderColor: CHART_GRID_COLOR, fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         <Bar dataKey="income" name="Income" fill={INCOME_COLOR.light} radius={[4, 4, 0, 0]} barSize={28} />
         <Bar dataKey="expenses" name="Expenses" fill={EXPENSE_COLOR.light} radius={[4, 4, 0, 0]} barSize={28} />

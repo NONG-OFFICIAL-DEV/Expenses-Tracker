@@ -35,12 +35,12 @@ export const DialogContent = forwardRef<
       {...props}
     >
       <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-        <DialogPrimitive.Title className="text-base font-semibold">{title}</DialogPrimitive.Title>
-        <DialogPrimitive.Close className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100">
+        <DialogPrimitive.Title className="text-base font-semibold text-neutral-900">{title}</DialogPrimitive.Title>
+        <DialogPrimitive.Close className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">{children}</div>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
 ));

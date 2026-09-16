@@ -14,8 +14,8 @@ export function Sidebar() {
   return (
     <aside className="hidden w-60 flex-col border-r border-neutral-200 bg-white p-4 sm:flex">
       <div className="mb-6 flex items-center gap-2 px-2">
-        <Wallet2 className="h-6 w-6" />
-        <span className="text-lg font-semibold">Expense Tracker</span>
+        <Wallet2 className="h-6 w-6 text-indigo-600" />
+        <span className="text-lg font-semibold text-neutral-900">Expense Tracker</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1">
         {NAV_ITEMS.map((item) => {
@@ -26,8 +26,8 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
-                active ? "bg-neutral-900 text-white" : "text-neutral-600 hover:bg-neutral-100"
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                active ? "bg-indigo-50 text-indigo-700" : "text-neutral-600 hover:bg-neutral-100"
               )}
             >
               <Icon className="h-4 w-4" />

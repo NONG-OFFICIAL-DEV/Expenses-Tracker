@@ -87,8 +87,10 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save",
                   key={t}
                   type="button"
                   onClick={() => field.onChange(t)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium ${
-                    field.value === t ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white"
+                  className={`h-11 rounded-lg border px-3 text-sm font-medium transition-colors ${
+                    field.value === t
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
                   }`}
                 >
                   {t === "EXPENSE" ? "Expense" : t === "INCOME" ? "Income" : "Transfer"}

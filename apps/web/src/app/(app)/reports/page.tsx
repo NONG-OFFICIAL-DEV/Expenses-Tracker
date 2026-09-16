@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth-context";
@@ -18,7 +18,10 @@ export default function ReportsPage() {
       <h1 className="text-2xl font-semibold">Reports</h1>
 
       {isLoading ? (
-        <p className="py-12 text-center text-sm text-neutral-500">Loading report...</p>
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+          Loading report...
+        </div>
       ) : !report || report.categories.length === 0 ? (
         <EmptyState
           icon={BarChart3}

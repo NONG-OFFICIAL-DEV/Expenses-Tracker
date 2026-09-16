@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Wallet } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,7 +19,12 @@ export default function DashboardPage() {
   const currency = user?.currency ?? "USD";
 
   if (accountsLoading || summaryLoading) {
-    return <p className="py-12 text-center text-sm text-neutral-500">Loading dashboard...</p>;
+    return (
+      <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
+        <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+        Loading dashboard...
+      </div>
+    );
   }
 
   if (!accounts || accounts.length === 0) {

@@ -12,7 +12,7 @@ function Delta({ current, previous, higherIsGood }: { current: number; previous:
   if (change === null) return null;
   const isIncrease = change > 0;
   const isGood = isIncrease === higherIsGood;
-  const color = change === 0 ? "text-neutral-400" : isGood ? "text-[#006300]" : "text-[#d03b3b]";
+  const color = change === 0 ? "text-neutral-400" : isGood ? "text-emerald-600" : "text-red-600";
   const sign = change > 0 ? "+" : "";
   return (
     <span className={`text-xs font-medium ${color}`}>
@@ -29,13 +29,13 @@ interface SummaryCardsProps {
 
 export function SummaryCards({ summary, currency }: SummaryCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <Card>
         <CardHeader>
           <CardTitle>Income</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl font-semibold">{formatAmount(summary.income, currency)}</p>
+          <p className="text-xl font-semibold tabular-nums text-neutral-900">{formatAmount(summary.income, currency)}</p>
           <Delta current={summary.income} previous={summary.previousMonth.income} higherIsGood />
         </CardContent>
       </Card>
@@ -44,7 +44,7 @@ export function SummaryCards({ summary, currency }: SummaryCardsProps) {
           <CardTitle>Expenses</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl font-semibold">{formatAmount(summary.expenses, currency)}</p>
+          <p className="text-xl font-semibold tabular-nums text-neutral-900">{formatAmount(summary.expenses, currency)}</p>
           <Delta current={summary.expenses} previous={summary.previousMonth.expenses} higherIsGood={false} />
         </CardContent>
       </Card>
@@ -53,7 +53,7 @@ export function SummaryCards({ summary, currency }: SummaryCardsProps) {
           <CardTitle>Net</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl font-semibold">{formatAmount(summary.net, currency)}</p>
+          <p className="text-xl font-semibold tabular-nums text-neutral-900">{formatAmount(summary.net, currency)}</p>
           <Delta current={summary.net} previous={summary.previousMonth.net} higherIsGood />
         </CardContent>
       </Card>
@@ -62,15 +62,15 @@ export function SummaryCards({ summary, currency }: SummaryCardsProps) {
           <CardTitle>Savings this month</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl font-semibold">{formatAmount(summary.savings, currency)}</p>
+          <p className="text-xl font-semibold tabular-nums text-neutral-900">{formatAmount(summary.savings, currency)}</p>
         </CardContent>
       </Card>
-      <Card className="col-span-2 sm:col-span-1">
+      <Card className="col-span-2 lg:col-span-1 border-indigo-200 bg-indigo-50/40">
         <CardHeader>
           <CardTitle>Total balance</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl font-semibold">{formatAmount(summary.totalBalance, currency)}</p>
+          <p className="text-2xl font-bold tabular-nums text-indigo-700">{formatAmount(summary.totalBalance, currency)}</p>
         </CardContent>
       </Card>
     </div>

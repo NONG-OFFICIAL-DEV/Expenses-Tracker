@@ -1,18 +1,8 @@
 import Link from "next/link";
 import { formatAmount } from "@/lib/shared";
 import { Card, CardContent } from "@/components/ui/card";
+import { ACCOUNT_TYPE_LABELS } from "@/lib/account-type-labels";
 import type { AccountWithBalance } from "@/lib/types";
-
-const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  BANK: "Bank",
-  SAVINGS: "Savings",
-  CASH: "Cash",
-  MOBILE_WALLET: "Mobile wallet",
-  CRYPTO: "Crypto",
-  INVESTMENT: "Investment",
-  CREDIT_CARD: "Credit card",
-  OTHER: "Other",
-};
 
 export function AccountCard({ account }: { account: AccountWithBalance }) {
   return (
@@ -23,7 +13,7 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
             <p className="font-medium text-neutral-900">{account.name}</p>
             <p className="text-xs text-neutral-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
           </div>
-          <p className="text-lg font-semibold">{formatAmount(account.balance, account.currency, account.type)}</p>
+          <p className="text-lg font-bold tabular-nums">{formatAmount(account.balance, account.currency, account.type)}</p>
         </CardContent>
       </Card>
     </Link>

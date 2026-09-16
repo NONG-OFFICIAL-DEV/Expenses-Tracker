@@ -35,8 +35,8 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="mb-1 text-xl font-semibold">Create your account</h1>
+      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-md">
+        <h1 className="mb-1 text-2xl font-semibold text-neutral-900">Create your account</h1>
         <p className="mb-6 text-sm text-neutral-500">Start tracking your finances.</p>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -61,7 +61,7 @@ export default function RegisterPage() {
         </form>
         <p className="mt-4 text-center text-sm text-neutral-500">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-neutral-900 underline">
+          <Link href="/login" className="font-medium text-indigo-600 hover:underline">
             Log in
           </Link>
         </p>

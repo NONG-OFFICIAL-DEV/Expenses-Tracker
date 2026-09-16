@@ -7,18 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ACCOUNT_TYPE_LABELS } from "@/lib/account-type-labels";
 import type { AccountWithBalance } from "@/lib/types";
-
-const ACCOUNT_TYPE_LABELS: Record<string, string> = {
-  BANK: "Bank",
-  SAVINGS: "Savings",
-  CASH: "Cash",
-  MOBILE_WALLET: "Mobile wallet",
-  CRYPTO: "Crypto",
-  INVESTMENT: "Investment",
-  CREDIT_CARD: "Credit card",
-  OTHER: "Other",
-};
 
 interface AccountFormProps {
   defaultValues?: AccountWithBalance;
