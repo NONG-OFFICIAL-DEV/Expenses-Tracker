@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTransactionSchema, type CreateTransactionInput } from "@expense-tracker/shared";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
+import { ApiError } from "@/lib/api-client";
 import type { Transaction } from "@/lib/types";
 
 export type TransactionFormValues = CreateTransactionInput;
@@ -29,6 +30,7 @@ function toDateInputValue(date: Date | string | undefined) {
 export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save", isSubmitting }: TransactionFormProps) {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -58,13 +60,18 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save",
 
   const type = watch("type");
 
-  const filteredCategories = useMemo(
-    () => categories.filter((c) => c.kind === type && c.parentId !== null),
-    [categories, type]
-  );
+  const filteredCategories = useMemo(() => {
+    const parentIds = new Set(categories.map((c) => c.parentId).filter(Boolean));
+    return categories.filter((c) => c.kind === type && !parentIds.has(c.id));
+  }, [categories, type]);
 
   const submit = handleSubmit(async (values) => {
-    await onSubmit(values);
+    setError(null);
+    try {
+      await onSubmit(values);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Something went wrong");
+    }
   });
 
   return (
@@ -188,6 +195,8 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save",
         <Label htmlFor="note">Note (optional)</Label>
         <Input id="note" {...register("note")} />
       </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <Button type="submit" disabled={isSubmitting} className="mt-2">
         {isSubmitting ? "Saving..." : submitLabel}

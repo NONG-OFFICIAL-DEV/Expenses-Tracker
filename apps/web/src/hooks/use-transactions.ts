@@ -1,8 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateTransactionInput, UpdateTransactionInput, TransactionFiltersInput } from "@expense-tracker/shared";
 import { api } from "@/lib/api-client";
 import type { Transaction, TransactionListResponse } from "@/lib/types";
 import { toQueryString } from "@/lib/query-string";
+
+const RECENT_PAGE_SIZE = 30;
 
 function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ["transactions"] });
@@ -15,6 +17,21 @@ export function useTransactions(filters: Partial<TransactionFiltersInput>) {
   return useQuery({
     queryKey: ["transactions", filters],
     queryFn: () => api.get<TransactionListResponse>(`/transactions${toQueryString(filters)}`),
+  });
+}
+
+export function useRecentTransactions() {
+  return useInfiniteQuery({
+    queryKey: ["transactions", "recent"],
+    queryFn: ({ pageParam }) =>
+      api.get<TransactionListResponse>(
+        `/transactions${toQueryString({ page: pageParam, pageSize: RECENT_PAGE_SIZE })}`
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const loaded = allPages.reduce((sum, p) => sum + p.items.length, 0);
+      return loaded < lastPage.total ? allPages.length + 1 : undefined;
+    },
   });
 }
 

@@ -4,14 +4,19 @@ import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } fr
 
 export class NotFoundError extends Error {}
 
-export async function computeAccountBalance(prisma: PrismaClient, accountId: string): Promise<Prisma.Decimal> {
+export async function computeAccountBalance(
+  prisma: PrismaClient,
+  accountId: string,
+  excludeTransactionId?: string
+): Promise<Prisma.Decimal> {
   const account = await prisma.account.findUniqueOrThrow({ where: { id: accountId } });
+  const notExcluded = excludeTransactionId ? { id: { not: excludeTransactionId } } : {};
 
   const [income, expense, transfersIn, transfersOut, adjustments] = await Promise.all([
-    prisma.transaction.aggregate({ where: { accountId, type: "INCOME" }, _sum: { amount: true } }),
-    prisma.transaction.aggregate({ where: { accountId, type: "EXPENSE" }, _sum: { amount: true } }),
-    prisma.transaction.aggregate({ where: { toAccountId: accountId, type: "TRANSFER" }, _sum: { amount: true } }),
-    prisma.transaction.aggregate({ where: { accountId, type: "TRANSFER" }, _sum: { amount: true } }),
+    prisma.transaction.aggregate({ where: { accountId, type: "INCOME", ...notExcluded }, _sum: { amount: true } }),
+    prisma.transaction.aggregate({ where: { accountId, type: "EXPENSE", ...notExcluded }, _sum: { amount: true } }),
+    prisma.transaction.aggregate({ where: { toAccountId: accountId, type: "TRANSFER", ...notExcluded }, _sum: { amount: true } }),
+    prisma.transaction.aggregate({ where: { accountId, type: "TRANSFER", ...notExcluded }, _sum: { amount: true } }),
     prisma.balanceAdjustment.aggregate({ where: { accountId }, _sum: { difference: true } }),
   ]);
 

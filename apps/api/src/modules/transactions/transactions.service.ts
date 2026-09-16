@@ -1,10 +1,12 @@
-import type { PrismaClient, Prisma as PrismaNamespace } from "@prisma/client";
+import type { PrismaClient, Prisma as PrismaNamespace, Account } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import type {
   CreateTransactionInput,
   UpdateTransactionInput,
   TransactionFiltersInput,
 } from "@expense-tracker/shared";
+import { formatAmount } from "@expense-tracker/shared";
+import { computeAccountBalance } from "../accounts/accounts.service.js";
 
 export class NotFoundError extends Error {}
 export class ValidationError extends Error {}
@@ -15,6 +17,21 @@ async function assertAccountOwnership(prisma: PrismaClient, userId: string, acco
   return account;
 }
 
+async function assertSufficientBalanceForTransfer(
+  prisma: PrismaClient,
+  account: Account,
+  amount: Prisma.Decimal,
+  excludeTransactionId?: string
+) {
+  if (account.type === "CREDIT_CARD") return;
+  const balance = await computeAccountBalance(prisma, account.id, excludeTransactionId);
+  if (balance.lessThan(amount)) {
+    throw new ValidationError(
+      `Insufficient balance in "${account.name}" — available ${formatAmount(balance.toString(), account.currency, account.type)}`
+    );
+  }
+}
+
 async function assertCategoryUsable(prisma: PrismaClient, userId: string, categoryId: string, expectedKind: "INCOME" | "EXPENSE") {
   const category = await prisma.category.findFirst({ where: { id: categoryId, OR: [{ userId: null }, { userId }] } });
   if (!category) throw new ValidationError("Category not found");
@@ -23,10 +40,11 @@ async function assertCategoryUsable(prisma: PrismaClient, userId: string, catego
 }
 
 export async function createTransaction(prisma: PrismaClient, userId: string, input: CreateTransactionInput) {
-  await assertAccountOwnership(prisma, userId, input.accountId);
+  const account = await assertAccountOwnership(prisma, userId, input.accountId);
 
   if (input.type === "TRANSFER") {
     await assertAccountOwnership(prisma, userId, input.toAccountId!);
+    await assertSufficientBalanceForTransfer(prisma, account, new Prisma.Decimal(input.amount));
   } else {
     await assertCategoryUsable(prisma, userId, input.categoryId!, input.type);
   }
@@ -64,13 +82,15 @@ export async function updateTransaction(prisma: PrismaClient, userId: string, id
   const nextAccountId = input.accountId ?? existing.accountId;
   const nextToAccountId = input.toAccountId !== undefined ? input.toAccountId : existing.toAccountId;
   const nextCategoryId = input.categoryId !== undefined ? input.categoryId : existing.categoryId;
+  const nextAmount = input.amount !== undefined ? new Prisma.Decimal(input.amount) : existing.amount;
 
-  await assertAccountOwnership(prisma, userId, nextAccountId);
+  const account = await assertAccountOwnership(prisma, userId, nextAccountId);
 
   if (nextType === "TRANSFER") {
     if (!nextToAccountId) throw new ValidationError("toAccountId is required for transfers");
     if (nextToAccountId === nextAccountId) throw new ValidationError("Cannot transfer to the same account");
     await assertAccountOwnership(prisma, userId, nextToAccountId);
+    await assertSufficientBalanceForTransfer(prisma, account, nextAmount, existing.id);
   } else {
     if (!nextCategoryId) throw new ValidationError("categoryId is required");
     await assertCategoryUsable(prisma, userId, nextCategoryId, nextType);
