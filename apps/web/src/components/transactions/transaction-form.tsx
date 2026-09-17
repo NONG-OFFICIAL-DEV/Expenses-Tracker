@@ -85,8 +85,12 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
 
   const filteredCategories = useMemo(() => {
     const parentIds = new Set(categories.map((c) => c.parentId).filter(Boolean));
-    return categories.filter((c) => c.kind === type && !parentIds.has(c.id));
-  }, [categories, type]);
+    // Inactive categories are hidden from new picks, but an existing transaction that already
+    // used one keeps showing it so editing doesn't silently blank out its category.
+    return categories.filter(
+      (c) => c.kind === type && !parentIds.has(c.id) && (c.isActive || c.id === defaultValues?.categoryId)
+    );
+  }, [categories, type, defaultValues?.categoryId]);
 
   const quickCategories = useMemo(() => {
     const topIds = getTopCategoryIds(

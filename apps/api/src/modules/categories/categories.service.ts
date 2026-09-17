@@ -13,6 +13,7 @@ export function listCategories(prisma: PrismaClient, userId: string) {
 
 export async function createCategory(prisma: PrismaClient, userId: string, input: CreateCategoryInput) {
   if (input.parentId) {
+    if (input.kind === "INCOME") throw new ValidationError("Income categories cannot have subcategories");
     const parent = await prisma.category.findFirst({
       where: { id: input.parentId, OR: [{ userId: null }, { userId }] },
     });
@@ -25,16 +26,22 @@ export async function createCategory(prisma: PrismaClient, userId: string, input
 }
 
 export async function updateCategory(prisma: PrismaClient, userId: string, categoryId: string, input: UpdateCategoryInput) {
-  const existing = await prisma.category.findFirst({ where: { id: categoryId, userId } });
-  if (!existing) throw new NotFoundError("Category not found or not editable");
+  // Renaming or toggling active/inactive is allowed on default (system) categories too, not
+  // just the user's own — they're shared read-only-by-default rows, not per-user copies.
+  const existing = await prisma.category.findFirst({
+    where: { id: categoryId, OR: [{ userId: null }, { userId }] },
+  });
+  if (!existing) throw new NotFoundError("Category not found");
   return prisma.category.update({
     where: { id: categoryId },
-    data: { name: input.name, parentId: input.parentId },
+    data: { name: input.name, parentId: input.parentId, isActive: input.isActive },
   });
 }
 
 export async function deleteCategory(prisma: PrismaClient, userId: string, categoryId: string) {
+  // Deleting is still restricted to categories the user created themselves — default
+  // categories are shared, so a delete would remove them for every user.
   const existing = await prisma.category.findFirst({ where: { id: categoryId, userId } });
-  if (!existing) throw new NotFoundError("Category not found or not editable");
+  if (!existing) throw new NotFoundError("Category not found or not deletable");
   await prisma.category.delete({ where: { id: categoryId } });
 }

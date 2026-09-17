@@ -31,6 +31,7 @@ export interface Category {
   name: string;
   kind: CategoryKind;
   parentId: string | null;
+  isActive: boolean;
   createdAt: string;
 }
 

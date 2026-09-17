@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,13 +47,15 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
         <div className="no-scrollbar mt-4 flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
           {groups.map(({ parent, children }) => (
             <div key={parent.id} className="flex flex-col gap-1 rounded-lg border border-neutral-100 p-2">
-              <CategoryRow category={parent} canEdit={parent.userId === user?.id} bold />
-              <div className="ml-3 flex flex-col gap-1 border-l border-neutral-100 pl-3">
-                {children.map((category) => (
-                  <CategoryRow key={category.id} category={category} canEdit={category.userId === user?.id} />
-                ))}
-                <AddSubcategoryRow parentId={parent.id} kind={kind} />
-              </div>
+              <CategoryRow category={parent} canDelete={parent.userId === user?.id} bold />
+              {kind === "EXPENSE" && (
+                <div className="ml-3 flex flex-col gap-1 border-l border-neutral-100 pl-3">
+                  {children.map((category) => (
+                    <CategoryRow key={category.id} category={category} canDelete={category.userId === user?.id} />
+                  ))}
+                  <AddSubcategoryRow parentId={parent.id} kind={kind} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -64,7 +66,7 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
   );
 }
 
-function CategoryRow({ category, canEdit, bold }: { category: Category; canEdit: boolean; bold?: boolean }) {
+function CategoryRow({ category, canDelete, bold }: { category: Category; canDelete: boolean; bold?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,15 @@ function CategoryRow({ category, canEdit, bold }: { category: Category; canEdit:
       setEditing(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to rename category");
+    }
+  }
+
+  async function toggleActive() {
+    setError(null);
+    try {
+      await updateMutation.mutateAsync({ isActive: !category.isActive });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update category");
     }
   }
 
@@ -114,13 +125,26 @@ function CategoryRow({ category, canEdit, bold }: { category: Category; canEdit:
             className="h-8 text-sm"
           />
         ) : (
-          <span className={`text-sm text-neutral-800 ${bold ? "font-semibold text-neutral-900" : ""}`}>
+          <span
+            className={`text-sm ${category.isActive ? "text-neutral-800" : "text-neutral-400"} ${
+              bold ? (category.isActive ? "font-semibold text-neutral-900" : "font-semibold") : ""
+            }`}
+          >
             {category.name}
+            {!category.isActive && <span className="ml-1.5 text-xs font-normal text-neutral-400">(inactive)</span>}
           </span>
         )}
 
-        {canEdit && !editing && (
-          <div className="flex shrink-0 gap-1">
+        {!editing && (
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={toggleActive}
+              title={category.isActive ? "Deactivate" : "Activate"}
+              className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+            >
+              {category.isActive ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+            </button>
             <button
               type="button"
               onClick={() => setEditing(true)}
@@ -128,13 +152,15 @@ function CategoryRow({ category, canEdit, bold }: { category: Category; canEdit:
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         )}
       </div>
