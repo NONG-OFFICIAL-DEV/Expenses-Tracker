@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 type UsageMap = Record<string, number>;
@@ -30,10 +30,14 @@ function writeUsage(userId: string, usage: UsageMap) {
 export function useCategoryUsage() {
   const { user } = useAuth();
   const [usage, setUsage] = useState<UsageMap>({});
+  const [loadedForUserId, setLoadedForUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) setUsage(readUsage(user.id));
-  }, [user]);
+  // Reload usage whenever the signed-in user changes, without a setState-in-effect
+  // round-trip (see https://react.dev/learn/you-might-not-need-an-effect).
+  if (user && user.id !== loadedForUserId) {
+    setLoadedForUserId(user.id);
+    setUsage(readUsage(user.id));
+  }
 
   const recordUse = useCallback(
     (categoryId: string) => {

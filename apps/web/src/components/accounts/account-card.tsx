@@ -12,6 +12,9 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
       <Card className="transition-colors hover:border-neutral-300">
         <CardContent className="flex items-center gap-3 p-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+            {/* resolveAccountIcon only ever picks from a fixed, stateless set of lucide
+                icon components, so a different pick between renders is safe to swap in place. */}
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1">
