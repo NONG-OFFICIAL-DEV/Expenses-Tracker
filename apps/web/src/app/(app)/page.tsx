@@ -43,33 +43,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold">Hi, {user?.name}</h1>
         <p className="text-sm text-neutral-500">Here&apos;s how your money looks this month.</p>
       </div>
 
-      {summary && <SummaryCards summary={summary} currency={currency} />}
+      <div className="no-scrollbar flex max-h-[calc(100vh-220px)] flex-col gap-6 overflow-y-auto">
+        {summary && <SummaryCards summary={summary} currency={currency} />}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-1.5">
-            <PieChart className="h-4 w-4 text-neutral-400" />
-            Expenses by category
-          </CardTitle>
-        </CardHeader>
-        <CardContent>{summary && <CategoryChart data={summary.categoryBreakdown} currency={currency} />}</CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-1.5">
+              <PieChart className="h-4 w-4 text-neutral-400" />
+              Expenses by category
+            </CardTitle>
+          </CardHeader>
+          <CardContent>{summary && <CategoryChart data={summary.categoryBreakdown} currency={currency} />}</CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-1.5">
-            <TrendingUp className="h-4 w-4 text-neutral-400" />
-            Income vs expenses
-          </CardTitle>
-        </CardHeader>
-        <CardContent>{summary && <MonthComparison summary={summary} currency={currency} />}</CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-1.5">
+              <TrendingUp className="h-4 w-4 text-neutral-400" />
+              Income vs expenses
+            </CardTitle>
+          </CardHeader>
+          <CardContent>{summary && <MonthComparison summary={summary} currency={currency} />}</CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
