@@ -31,7 +31,7 @@ export function MonthlyGrid({ report, currency }: { report: MonthlyReport; curre
     <div>
       {/* Mobile: pick a month, see a scannable vertical list - a 12-column table doesn't fit a phone screen */}
       <div className="sm:hidden">
-        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+        <div className="no-scrollbar mb-3 flex gap-1.5 overflow-x-auto pb-1">
           {MONTH_LABELS.map((label, index) => (
             <BadgeButton
               key={label}

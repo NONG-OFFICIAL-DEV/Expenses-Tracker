@@ -46,7 +46,7 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
           </TabsList>
         </Tabs>
 
-        <div className="mt-4 flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
+        <div className="no-scrollbar mt-4 flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
           {grouped.groups.map(({ parent, children }) => (
             <div key={parent.id} className="flex flex-col gap-1">
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{parent.name}</p>

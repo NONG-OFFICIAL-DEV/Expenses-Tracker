@@ -39,7 +39,7 @@ export const SelectContent = forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "z-50 max-h-64 min-w-[8rem] overflow-y-auto rounded-lg border border-neutral-200 bg-white shadow-md",
+        "no-scrollbar z-50 max-h-64 min-w-[8rem] overflow-y-auto rounded-lg border border-neutral-200 bg-white shadow-md",
         className
       )}
       position="popper"

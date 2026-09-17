@@ -85,7 +85,7 @@ export default function TransactionsPage() {
           action={<TransactionFormDialog trigger={<Button>Add a transaction</Button>} />}
         />
       ) : (
-        <div ref={scrollRef} className="flex max-h-[calc(100vh-220px)] flex-col gap-4 overflow-y-auto pr-1">
+        <div ref={scrollRef} className="no-scrollbar flex max-h-[calc(100vh-220px)] flex-col gap-4 overflow-y-auto pr-1">
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
               <p className="sticky top-0 bg-white py-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
