@@ -155,6 +155,7 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
           <input
             id="amount"
             type="number"
+            inputMode="decimal"
             step="0.01"
             min="0"
             placeholder="0"

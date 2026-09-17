@@ -7,7 +7,7 @@ import type { AccountWithBalance } from "@/lib/types";
 export function AccountCard({ account }: { account: AccountWithBalance }) {
   return (
     <Link href={`/accounts/${account.id}`}>
-      <Card className="transition-shadow hover:shadow-md">
+      <Card className="transition-colors hover:border-neutral-300">
         <CardContent className="flex items-center justify-between p-4">
           <div>
             <p className="font-medium text-neutral-900">{account.name}</p>

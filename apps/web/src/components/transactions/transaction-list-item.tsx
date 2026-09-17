@@ -37,7 +37,7 @@ export function TransactionListItem({ transaction }: { transaction: Transaction 
   return (
     <Link
       href={`/transactions/${transaction.id}`}
-      className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm transition-colors hover:bg-neutral-50"
+      className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3 transition-colors hover:bg-neutral-50"
     >
       <div className={`flex h-10 w-10 items-center justify-center rounded-full ${TYPE_COLOR[transaction.type]}`}>
         <Icon className="h-5 w-5" />

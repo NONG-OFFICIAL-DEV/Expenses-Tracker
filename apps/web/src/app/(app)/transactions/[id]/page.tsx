@@ -89,7 +89,7 @@ export default function TransactionDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-neutral-200 bg-white p-4">
         <Row label="Date" value={new Date(transaction.date).toLocaleDateString()} />
         <Row label="Account" value={transaction.account.name} />
         {transaction.type === "TRANSFER" ? (

@@ -60,7 +60,7 @@ export default function AccountDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-neutral-200 bg-white p-6">
         <p className="text-sm font-medium text-neutral-500">Current balance</p>
         <p className="text-3xl font-bold tabular-nums text-neutral-900">{formatAmount(account.balance, account.currency, account.type)}</p>
         <div className="mt-4">
