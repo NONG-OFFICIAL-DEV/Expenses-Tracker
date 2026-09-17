@@ -51,6 +51,7 @@ export function createAccount(prisma: PrismaClient, userId: string, input: Creat
       userId,
       name: input.name,
       type: input.type,
+      icon: input.icon ?? null,
       currency: input.currency,
       openingBalance: new Decimal(input.openingBalance),
     },
@@ -65,6 +66,7 @@ export async function updateAccount(prisma: PrismaClient, userId: string, accoun
     data: {
       name: input.name,
       type: input.type,
+      icon: input.icon,
       currency: input.currency,
       isActive: input.isActive,
       openingBalance: input.openingBalance !== undefined ? new Decimal(input.openingBalance) : undefined,

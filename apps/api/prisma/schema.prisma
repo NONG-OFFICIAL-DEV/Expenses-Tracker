@@ -48,6 +48,7 @@ model Account {
   userId         String
   name           String
   type           AccountType
+  icon           String?
   currency       String   @default("USD")
   openingBalance Decimal  @default(0) @db.Decimal(20, 8)
   isActive       Boolean  @default(true)

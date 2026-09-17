@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2, Wallet } from "lucide-react";
+import { Loader2, PieChart, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -53,14 +53,20 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Expenses by category</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            <PieChart className="h-4 w-4 text-neutral-400" />
+            Expenses by category
+          </CardTitle>
         </CardHeader>
         <CardContent>{summary && <CategoryChart data={summary.categoryBreakdown} currency={currency} />}</CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Income vs expenses</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4 text-neutral-400" />
+            Income vs expenses
+          </CardTitle>
         </CardHeader>
         <CardContent>{summary && <MonthComparison summary={summary} currency={currency} />}</CardContent>
       </Card>

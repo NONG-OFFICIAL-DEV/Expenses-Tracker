@@ -12,6 +12,7 @@ export interface Account {
   userId: string;
   name: string;
   type: AccountType;
+  icon: string | null;
   currency: string;
   openingBalance: string;
   isActive: boolean;

@@ -4,25 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isToday } from "date-fns";
-import {
-  ArrowDownCircle,
-  ArrowLeftRight,
-  ArrowUpCircle,
-  Banknote,
-  Bitcoin,
-  CalendarIcon,
-  ChevronRight,
-  CreditCard,
-  Landmark,
-  PiggyBank,
-  Plus,
-  Smartphone,
-  Tag,
-  TrendingUp,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react";
-import { createTransactionSchema, type AccountType, type CreateTransactionInput } from "@/lib/shared";
+import { ArrowDownCircle, ArrowLeftRight, ArrowUpCircle, CalendarIcon, ChevronRight, Plus, Tag, Wallet } from "lucide-react";
+import { createTransactionSchema, type CreateTransactionInput } from "@/lib/shared";
+import { resolveAccountIcon } from "@/lib/account-icons";
+import { BadgeButton } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -32,8 +17,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
+import { useCategoryUsage } from "@/hooks/use-category-usage";
 import { ApiError } from "@/lib/api-client";
 import type { Transaction } from "@/lib/types";
+
+const QUICK_CATEGORY_LIMIT = 6;
 
 export type TransactionFormValues = CreateTransactionInput;
 
@@ -43,17 +31,6 @@ interface TransactionFormProps {
   submitLabel?: string;
   isSubmitting?: boolean;
 }
-
-const ACCOUNT_TYPE_ICONS: Record<AccountType, LucideIcon> = {
-  BANK: Landmark,
-  SAVINGS: PiggyBank,
-  CASH: Wallet,
-  MOBILE_WALLET: Smartphone,
-  CRYPTO: Bitcoin,
-  INVESTMENT: TrendingUp,
-  CREDIT_CARD: CreditCard,
-  OTHER: Banknote,
-};
 
 const TYPE_LABEL: Record<CreateTransactionInput["type"], string> = {
   EXPENSE: "expense",
@@ -67,6 +44,7 @@ const rowTriggerClass =
 export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmitting }: TransactionFormProps) {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
+  const { recordUse, getTopCategoryIds } = useCategoryUsage();
   const [error, setError] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(() => Boolean(defaultValues?.merchant || defaultValues?.note));
   const amountRef = useRef<HTMLInputElement | null>(null);
@@ -109,10 +87,20 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
     return categories.filter((c) => c.kind === type && !parentIds.has(c.id));
   }, [categories, type]);
 
+  const quickCategories = useMemo(() => {
+    const topIds = getTopCategoryIds(
+      filteredCategories.map((c) => c.id),
+      QUICK_CATEGORY_LIMIT
+    );
+    const ids = topIds.length > 0 ? topIds : filteredCategories.slice(0, QUICK_CATEGORY_LIMIT).map((c) => c.id);
+    return ids.map((id) => filteredCategories.find((c) => c.id === id)!).filter(Boolean);
+  }, [filteredCategories, getTopCategoryIds]);
+
   const submit = handleSubmit(async (values) => {
     setError(null);
     try {
       await onSubmit(values);
+      if (values.categoryId) recordUse(values.categoryId);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
     }
@@ -177,22 +165,37 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
             control={control}
             name="categoryId"
             render={({ field }) => (
-              <Select value={field.value ?? undefined} onValueChange={field.onChange}>
-                <SelectTrigger hideIcon className={rowTriggerClass}>
-                  <span className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-neutral-400" />
-                    <SelectValue placeholder="Select category" />
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-neutral-300" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <>
+                {quickCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pb-1">
+                    {quickCategories.map((category) => (
+                      <BadgeButton
+                        key={category.id}
+                        variant={field.value === category.id ? "default" : "secondary"}
+                        onClick={() => field.onChange(category.id)}
+                      >
+                        {category.name}
+                      </BadgeButton>
+                    ))}
+                  </div>
+                )}
+                <Select value={field.value ?? undefined} onValueChange={field.onChange}>
+                  <SelectTrigger hideIcon className={rowTriggerClass}>
+                    <span className="flex items-center gap-2">
+                      <Tag className="h-4 w-4 text-neutral-400" />
+                      <SelectValue placeholder="Select category" />
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-neutral-300" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
             )}
           />
           {errors.categoryId && <p className="text-xs text-red-600">{errors.categoryId.message}</p>}
@@ -206,7 +209,7 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
           name="accountId"
           render={({ field }) => {
             const selected = accounts.find((a) => a.id === field.value);
-            const Icon = selected ? ACCOUNT_TYPE_ICONS[selected.type] : Wallet;
+            const Icon = selected ? resolveAccountIcon(selected) : Wallet;
             return (
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger hideIcon className={rowTriggerClass}>
@@ -238,7 +241,7 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
             name="toAccountId"
             render={({ field }) => {
               const selected = accounts.find((a) => a.id === field.value);
-              const Icon = selected ? ACCOUNT_TYPE_ICONS[selected.type] : Wallet;
+              const Icon = selected ? resolveAccountIcon(selected) : Wallet;
               return (
                 <Select value={field.value ?? undefined} onValueChange={field.onChange}>
                   <SelectTrigger hideIcon className={rowTriggerClass}>

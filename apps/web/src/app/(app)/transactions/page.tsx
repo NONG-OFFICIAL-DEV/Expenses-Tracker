@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Loader2, Receipt } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, MoreVertical, Receipt, Tag } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ManageCategoriesDialog } from "@/components/categories/manage-categories-dialog";
 import { TransactionListItem } from "@/components/transactions/transaction-list-item";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";
 import { useRecentTransactions } from "@/hooks/use-transactions";
@@ -22,6 +24,7 @@ export default function TransactionsPage() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const [manageCategoriesOpen, setManageCategoriesOpen] = useState(false);
 
   const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
   const groups = useMemo(() => groupTransactionsByDate(items), [items]);
@@ -44,7 +47,24 @@ export default function TransactionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Transactions</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Transactions</h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Transaction options">
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onSelect={() => setManageCategoriesOpen(true)}>
+              <Tag className="h-4 w-4" />
+              Manage categories
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <ManageCategoriesDialog open={manageCategoriesOpen} onOpenChange={setManageCategoriesOpen} />
 
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
