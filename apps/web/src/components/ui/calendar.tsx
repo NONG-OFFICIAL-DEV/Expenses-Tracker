@@ -26,6 +26,13 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
           "flex h-8 w-8 items-center justify-center rounded-md p-0 hover:bg-neutral-100 disabled:opacity-50"
         ),
         month_caption: cn(defaultClassNames.month_caption, "flex h-8 items-center justify-center text-sm font-medium"),
+        dropdowns: cn(defaultClassNames.dropdowns, "flex items-center gap-1"),
+        dropdown_root: cn(defaultClassNames.dropdown_root, "relative inline-flex"),
+        dropdown: cn(defaultClassNames.dropdown, "absolute inset-0 z-10 cursor-pointer opacity-0"),
+        caption_label: cn(
+          defaultClassNames.caption_label,
+          "inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 font-medium [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:text-neutral-400"
+        ),
         weekdays: cn(defaultClassNames.weekdays, "flex"),
         weekday: cn(defaultClassNames.weekday, "w-9 text-xs font-normal text-neutral-500"),
         week: cn(defaultClassNames.week, "mt-1 flex w-full"),

@@ -291,6 +291,9 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
                   selected={field.value}
                   onSelect={(date) => date && field.onChange(date)}
                   defaultMonth={field.value}
+                  captionLayout="dropdown"
+                  startMonth={new Date(new Date().getFullYear() - 10, 0)}
+                  endMonth={new Date(new Date().getFullYear(), 11)}
                 />
               </PopoverContent>
             </Popover>
