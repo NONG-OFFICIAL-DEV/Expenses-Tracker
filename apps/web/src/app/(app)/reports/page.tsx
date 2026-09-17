@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Loader2 } from "lucide-react";
+import { BarChart3, Loader2, Table2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth-context";
@@ -32,7 +32,10 @@ export default function ReportsPage() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Total expenses by month ({report.year})</CardTitle>
+              <CardTitle className="flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4 text-neutral-400" />
+                Total expenses by month ({report.year})
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <YearlyChart totalsByMonth={report.totalsByMonth} currency={currency} />
@@ -41,7 +44,10 @@ export default function ReportsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Category breakdown</CardTitle>
+              <CardTitle className="flex items-center gap-1.5">
+                <Table2 className="h-4 w-4 text-neutral-400" />
+                Category breakdown
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <MonthlyGrid report={report} currency={currency} />

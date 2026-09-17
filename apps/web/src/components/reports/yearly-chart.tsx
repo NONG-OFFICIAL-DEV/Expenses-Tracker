@@ -10,13 +10,22 @@ export function YearlyChart({ totalsByMonth, currency }: { totalsByMonth: number
   const data = totalsByMonth.map((total, index) => ({ label: MONTH_LABELS[index], total }));
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={CHART_GRID_COLOR} />
-        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: CHART_AXIS_LINE_COLOR }} tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }} />
-        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }} width={48} />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={{ stroke: CHART_AXIS_LINE_COLOR }}
+          tick={{ fontSize: 10, fill: CHART_AXIS_TEXT_COLOR }}
+          interval={0}
+          angle={-45}
+          textAnchor="end"
+          height={44}
+        />
+        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: CHART_AXIS_TEXT_COLOR }} width={40} />
         <Tooltip formatter={(value: number) => formatAmount(value, currency)} contentStyle={{ borderRadius: 8, borderColor: CHART_GRID_COLOR, fontSize: 12 }} />
-        <Bar dataKey="total" name="Expenses" fill={CATEGORICAL_LIGHT[0]} radius={[4, 4, 0, 0]} barSize={24} />
+        <Bar dataKey="total" name="Expenses" fill={CATEGORICAL_LIGHT[0]} radius={[4, 4, 0, 0]} barSize={16} />
       </BarChart>
     </ResponsiveContainer>
   );
