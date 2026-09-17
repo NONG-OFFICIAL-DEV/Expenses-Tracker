@@ -37,7 +37,7 @@ export function TransactionFormDialog({ trigger, transaction, onSaved }: Transac
         <TransactionForm
           defaultValues={transaction}
           onSubmit={handleSubmit}
-          submitLabel={isEditing ? "Save changes" : "Add transaction"}
+          submitLabel={isEditing ? "Save changes" : undefined}
           isSubmitting={isSubmitting}
         />
       </DialogContent>
