@@ -5,6 +5,7 @@ export const createAccountSchema = z.object({
   name: z.string().min(1).max(120),
   type: z.enum(ACCOUNT_TYPES),
   icon: z.string().max(40).nullish(),
+  color: z.string().max(20).nullish(),
   currency: z.string().length(3).default("USD"),
   openingBalance: z.coerce.number().finite().default(0),
 });
@@ -14,6 +15,7 @@ export const updateAccountSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   type: z.enum(ACCOUNT_TYPES).optional(),
   icon: z.string().max(40).nullish(),
+  color: z.string().max(20).nullish(),
   currency: z.string().length(3).optional(),
   openingBalance: z.coerce.number().finite().optional(),
   isActive: z.boolean().optional(),

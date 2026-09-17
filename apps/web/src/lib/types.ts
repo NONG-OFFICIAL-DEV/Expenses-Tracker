@@ -13,6 +13,7 @@ export interface Account {
   name: string;
   type: AccountType;
   icon: string | null;
+  color: string | null;
   currency: string;
   openingBalance: string;
   isActive: boolean;

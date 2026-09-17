@@ -4,12 +4,31 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Pencil, ScaleIcon, Trash2 } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
+import { resolveAccountIcon } from "@/lib/account-icons";
+import { resolveAccountColor } from "@/lib/account-colors";
 import { Button } from "@/components/ui/button";
 import { useAccount, useDeleteAccount } from "@/hooks/use-accounts";
 import { useTransactions } from "@/hooks/use-transactions";
 import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
 import { ReconcileDialog } from "@/components/accounts/reconcile-dialog";
 import { TransactionListItem } from "@/components/transactions/transaction-list-item";
+import type { AccountWithBalance } from "@/lib/types";
+
+function AccountIcon({ account }: { account: AccountWithBalance }) {
+  const Icon = resolveAccountIcon(account);
+  const colorHex = resolveAccountColor(account);
+  return (
+    <div
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+      style={{ backgroundColor: `${colorHex}26`, color: colorHex }}
+    >
+      {/* resolveAccountIcon only ever picks from a fixed, stateless set of lucide
+          icon components, so a different pick between renders is safe to swap in place. */}
+      {/* eslint-disable-next-line react-hooks/static-components */}
+      <Icon className="h-6 w-6" />
+    </div>
+  );
+}
 
 export default function AccountDetailPage() {
   const params = useParams<{ id: string }>();
@@ -41,9 +60,12 @@ export default function AccountDetailPage() {
       </Link>
 
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">{account.name}</h1>
-          <p className="text-sm text-neutral-500">{account.type.replace("_", " ")}</p>
+        <div className="flex items-center gap-3">
+          <AccountIcon account={account} />
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-900">{account.name}</h1>
+            <p className="text-sm text-neutral-500">{account.type.replace("_", " ")}</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <AccountFormDialog
@@ -60,7 +82,7 @@ export default function AccountDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6">
+      <div className="rounded-xl border bg-white p-6" style={{ borderColor: `${resolveAccountColor(account)}66` }}>
         <p className="text-sm font-medium text-neutral-500">Current balance</p>
         <p className="text-3xl font-bold tabular-nums text-neutral-900">{formatAmount(account.balance, account.currency, account.type)}</p>
         <div className="mt-4">

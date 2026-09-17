@@ -7,6 +7,7 @@ import { format, isToday } from "date-fns";
 import { ArrowDownCircle, ArrowLeftRight, ArrowUpCircle, CalendarIcon, ChevronRight, Plus, Tag, Wallet } from "lucide-react";
 import { createTransactionSchema, type CreateTransactionInput } from "@/lib/shared";
 import { resolveAccountIcon } from "@/lib/account-icons";
+import { resolveAccountColor } from "@/lib/account-colors";
 import { BadgeButton } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -210,11 +211,12 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
           render={({ field }) => {
             const selected = accounts.find((a) => a.id === field.value);
             const Icon = selected ? resolveAccountIcon(selected) : Wallet;
+            const iconColor = selected ? resolveAccountColor(selected) : undefined;
             return (
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger hideIcon className={rowTriggerClass}>
                   <span className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-neutral-400" />
+                    <Icon className={iconColor ? "h-4 w-4" : "h-4 w-4 text-neutral-400"} style={iconColor ? { color: iconColor } : undefined} />
                     <SelectValue placeholder="Select account" />
                   </span>
                   <ChevronRight className="h-4 w-4 text-neutral-300" />
@@ -242,11 +244,12 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
             render={({ field }) => {
               const selected = accounts.find((a) => a.id === field.value);
               const Icon = selected ? resolveAccountIcon(selected) : Wallet;
+              const iconColor = selected ? resolveAccountColor(selected) : undefined;
               return (
                 <Select value={field.value ?? undefined} onValueChange={field.onChange}>
                   <SelectTrigger hideIcon className={rowTriggerClass}>
                     <span className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-neutral-400" />
+                      <Icon className={iconColor ? "h-4 w-4" : "h-4 w-4 text-neutral-400"} style={iconColor ? { color: iconColor } : undefined} />
                       <SelectValue placeholder="Select destination account" />
                     </span>
                     <ChevronRight className="h-4 w-4 text-neutral-300" />
