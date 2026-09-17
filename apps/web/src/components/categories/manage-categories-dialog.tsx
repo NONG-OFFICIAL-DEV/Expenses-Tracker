@@ -22,18 +22,16 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
   const { data: categories = [] } = useCategories();
   const { user } = useAuth();
 
-  const grouped = useMemo(() => {
+  const groups = useMemo(() => {
     const inKind = categories.filter((c) => c.kind === kind);
     const childrenByParent = new Map<string, Category[]>();
     inKind.forEach((c) => {
       if (!c.parentId) return;
       childrenByParent.set(c.parentId, [...(childrenByParent.get(c.parentId) ?? []), c]);
     });
-    const groups = inKind
-      .filter((c) => !c.parentId && childrenByParent.has(c.id))
-      .map((parent) => ({ parent, children: childrenByParent.get(parent.id)! }));
-    const standalone = inKind.filter((c) => !c.parentId && !childrenByParent.has(c.id));
-    return { groups, standalone };
+    return inKind
+      .filter((c) => !c.parentId)
+      .map((parent) => ({ parent, children: childrenByParent.get(parent.id) ?? [] }));
   }, [categories, kind]);
 
   return (
@@ -46,24 +44,18 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
           </TabsList>
         </Tabs>
 
-        <div className="no-scrollbar mt-4 flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
-          {grouped.groups.map(({ parent, children }) => (
-            <div key={parent.id} className="flex flex-col gap-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{parent.name}</p>
-              {children.map((category) => (
-                <CategoryRow key={category.id} category={category} canEdit={category.userId === user?.id} />
-              ))}
+        <div className="no-scrollbar mt-4 flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
+          {groups.map(({ parent, children }) => (
+            <div key={parent.id} className="flex flex-col gap-1 rounded-lg border border-neutral-100 p-2">
+              <CategoryRow category={parent} canEdit={parent.userId === user?.id} bold />
+              <div className="ml-3 flex flex-col gap-1 border-l border-neutral-100 pl-3">
+                {children.map((category) => (
+                  <CategoryRow key={category.id} category={category} canEdit={category.userId === user?.id} />
+                ))}
+                <AddSubcategoryRow parentId={parent.id} kind={kind} />
+              </div>
             </div>
           ))}
-
-          {grouped.standalone.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Custom</p>
-              {grouped.standalone.map((category) => (
-                <CategoryRow key={category.id} category={category} canEdit={category.userId === user?.id} />
-              ))}
-            </div>
-          )}
         </div>
 
         <AddCategoryRow kind={kind} />
@@ -72,7 +64,7 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
   );
 }
 
-function CategoryRow({ category, canEdit }: { category: Category; canEdit: boolean }) {
+function CategoryRow({ category, canEdit, bold }: { category: Category; canEdit: boolean; bold?: boolean }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +114,9 @@ function CategoryRow({ category, canEdit }: { category: Category; canEdit: boole
             className="h-8 text-sm"
           />
         ) : (
-          <span className="text-sm text-neutral-800">{category.name}</span>
+          <span className={`text-sm text-neutral-800 ${bold ? "font-semibold text-neutral-900" : ""}`}>
+            {category.name}
+          </span>
         )}
 
         {canEdit && !editing && (
@@ -143,6 +137,58 @@ function CategoryRow({ category, canEdit }: { category: Category; canEdit: boole
             </button>
           </div>
         )}
+      </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function AddSubcategoryRow({ parentId, kind }: { parentId: string; kind: CategoryKind }) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const createMutation = useCreateCategory();
+
+  async function handleAdd() {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setError(null);
+    try {
+      await createMutation.mutateAsync({ name: trimmed, kind, parentId });
+      setName("");
+      setAdding(false);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to add subcategory");
+    }
+  }
+
+  if (!adding) {
+    return (
+      <button
+        type="button"
+        onClick={() => setAdding(true)}
+        className="mt-1 flex items-center gap-1.5 self-start text-xs font-medium text-indigo-600 hover:text-indigo-700"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Add subcategory
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-1 flex flex-col gap-1.5">
+      <div className="flex gap-2">
+        <Input
+          autoFocus
+          placeholder="Subcategory name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          className="h-8 text-sm"
+        />
+        <Button type="button" size="sm" onClick={handleAdd} disabled={createMutation.isPending}>
+          Add
+        </Button>
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
@@ -176,7 +222,7 @@ function AddCategoryRow({ kind }: { kind: CategoryKind }) {
         className="mt-3 flex items-center gap-1.5 self-start text-sm font-medium text-indigo-600 hover:text-indigo-700"
       >
         <Plus className="h-4 w-4" />
-        Add category
+        Add main category
       </button>
     );
   }
