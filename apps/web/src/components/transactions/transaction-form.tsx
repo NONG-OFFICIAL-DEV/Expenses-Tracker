@@ -3,11 +3,16 @@
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ArrowDownCircle, ArrowLeftRight, ArrowUpCircle, CalendarIcon } from "lucide-react";
 import { createTransactionSchema, type CreateTransactionInput } from "@/lib/shared";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
 import { ApiError } from "@/lib/api-client";
@@ -20,11 +25,6 @@ interface TransactionFormProps {
   onSubmit: (values: TransactionFormValues) => Promise<void>;
   submitLabel?: string;
   isSubmitting?: boolean;
-}
-
-function toDateInputValue(date: Date | string | undefined) {
-  const d = date ? new Date(date) : new Date();
-  return d.toISOString().slice(0, 10);
 }
 
 export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save", isSubmitting }: TransactionFormProps) {
@@ -76,30 +76,28 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save",
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-2">
-        <Controller
-          control={control}
-          name="type"
-          render={({ field }) => (
-            <>
-              {(["EXPENSE", "INCOME", "TRANSFER"] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => field.onChange(t)}
-                  className={`h-11 rounded-lg border px-3 text-sm font-medium transition-colors ${
-                    field.value === t
-                      ? "border-indigo-600 bg-indigo-600 text-white"
-                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50"
-                  }`}
-                >
-                  {t === "EXPENSE" ? "Expense" : t === "INCOME" ? "Income" : "Transfer"}
-                </button>
-              ))}
-            </>
-          )}
-        />
-      </div>
+      <Controller
+        control={control}
+        name="type"
+        render={({ field }) => (
+          <Tabs value={field.value} onValueChange={field.onChange}>
+            <TabsList>
+              <TabsTrigger value="EXPENSE">
+                <ArrowDownCircle />
+                Expense
+              </TabsTrigger>
+              <TabsTrigger value="INCOME">
+                <ArrowUpCircle />
+                Income
+              </TabsTrigger>
+              <TabsTrigger value="TRANSFER">
+                <ArrowLeftRight />
+                Transfer
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+      />
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="amount">Amount</Label>
@@ -179,13 +177,34 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel = "Save",
       )}
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          defaultValue={toDateInputValue(defaultValues?.date)}
-          {...register("date")}
+        <Label>Date</Label>
+        <Controller
+          control={control}
+          name="date"
+          render={({ field }) => (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={(date) => date && field.onChange(date)}
+                  defaultMonth={field.value}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
         />
+        {errors.date && <p className="text-xs text-red-600">{errors.date.message}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
