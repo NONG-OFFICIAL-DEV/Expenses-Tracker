@@ -8,12 +8,16 @@ import { useCreateAccount, useUpdateAccount } from "@/hooks/use-accounts";
 import type { AccountWithBalance } from "@/lib/types";
 
 interface AccountFormDialogProps {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   account?: AccountWithBalance;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AccountFormDialog({ trigger, account }: AccountFormDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AccountFormDialog({ trigger, account, open: openProp, onOpenChange: onOpenChangeProp }: AccountFormDialogProps) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = onOpenChangeProp ?? setOpenState;
   const createMutation = useCreateAccount();
   const updateMutation = useUpdateAccount(account?.id ?? "");
   const isEditing = !!account;
@@ -30,7 +34,7 @@ export function AccountFormDialog({ trigger, account }: AccountFormDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent title={isEditing ? "Edit account" : "Add account"}>
         <AccountForm
           defaultValues={account}

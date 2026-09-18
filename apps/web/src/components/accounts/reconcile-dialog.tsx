@@ -10,8 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReconcileAccount } from "@/hooks/use-accounts";
 
-export function ReconcileDialog({ accountId, trigger }: { accountId: string; trigger: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+interface ReconcileDialogProps {
+  accountId: string;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function ReconcileDialog({ accountId, trigger, open: openProp, onOpenChange: onOpenChangeProp }: ReconcileDialogProps) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = onOpenChangeProp ?? setOpenState;
   const mutation = useReconcileAccount(accountId);
   const {
     register,
@@ -26,7 +35,7 @@ export function ReconcileDialog({ accountId, trigger }: { accountId: string; tri
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent title="Reconcile balance">
         <form onSubmit={submit} className="flex flex-col gap-4">
           <p className="text-sm text-neutral-500">
