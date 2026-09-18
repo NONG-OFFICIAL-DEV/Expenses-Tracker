@@ -11,7 +11,7 @@ export default function AccountsPage() {
   const { data: accounts, isLoading } = useAccounts();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Accounts</h1>
         <AccountFormDialog
@@ -46,7 +46,7 @@ export default function AccountsPage() {
           }
         />
       ) : (
-        <div className="no-scrollbar max-h-[calc(100dvh-220px)] overflow-y-auto">
+        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />

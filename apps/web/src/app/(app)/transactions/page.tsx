@@ -46,7 +46,7 @@ export default function TransactionsPage() {
   }, [loadMore]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Transactions</h1>
         <DropdownMenu>
@@ -85,7 +85,7 @@ export default function TransactionsPage() {
           action={<TransactionFormDialog trigger={<Button>Add a transaction</Button>} />}
         />
       ) : (
-        <div ref={scrollRef} className="no-scrollbar flex max-h-[calc(100dvh-220px)] flex-col gap-4 overflow-y-auto pr-1">
+        <div ref={scrollRef} className="no-scrollbar flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-2">
               <p className="sticky top-0 bg-white py-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">

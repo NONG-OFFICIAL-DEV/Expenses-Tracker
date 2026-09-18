@@ -43,13 +43,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold">Hi, {user?.name}</h1>
         <p className="text-sm text-neutral-500">Here&apos;s how your money looks this month.</p>
       </div>
 
-      <div className="no-scrollbar flex max-h-[calc(100dvh-220px)] flex-col gap-6 overflow-y-auto">
+      <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
         {summary && <SummaryCards summary={summary} currency={currency} />}
 
         <Card>
