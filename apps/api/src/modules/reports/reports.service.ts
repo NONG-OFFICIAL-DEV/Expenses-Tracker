@@ -17,20 +17,30 @@ export async function getMonthlyReport(prisma: PrismaClient, userId: string, que
     : [];
   const parentNameById = new Map(parents.map((p) => [p.id, p.name]));
 
-  const rows = new Map<string, { categoryId: string; name: string; months: number[] }>();
+  const rows = new Map<
+    string,
+    { categoryId: string; name: string; parentId: string | null; parentName: string | null; months: number[] }
+  >();
   for (const tx of transactions) {
     if (!tx.category) continue;
-    const rollupId = tx.category.parentId ?? tx.category.id;
-    const rollupName = tx.category.parentId ? parentNameById.get(tx.category.parentId) ?? tx.category.name : tx.category.name;
-    if (!rows.has(rollupId)) {
-      rows.set(rollupId, { categoryId: rollupId, name: rollupName, months: new Array(12).fill(0) });
+    const { id, name, parentId } = tx.category;
+    if (!rows.has(id)) {
+      rows.set(id, {
+        categoryId: id,
+        name,
+        parentId: parentId ?? null,
+        parentName: parentId ? (parentNameById.get(parentId) ?? null) : null,
+        months: new Array(12).fill(0),
+      });
     }
-    const row = rows.get(rollupId)!;
+    const row = rows.get(id)!;
     const monthIndex = tx.date.getUTCMonth();
     row.months[monthIndex] += tx.amount.toNumber();
   }
 
-  const grid = [...rows.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const grid = [...rows.values()].sort(
+    (a, b) => (a.parentName ?? a.name).localeCompare(b.parentName ?? b.name) || a.name.localeCompare(b.name)
+  );
   const totalsByMonth = new Array(12).fill(0);
   for (const row of grid) {
     row.months.forEach((value, index) => {

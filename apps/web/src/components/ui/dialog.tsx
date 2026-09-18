@@ -28,8 +28,8 @@ export const DialogContent = forwardRef<
       ref={ref}
       className={cn(
         "no-scrollbar fixed z-50 bg-white shadow-lg focus:outline-none",
-        "inset-x-0 bottom-0 rounded-t-2xl max-h-[88vh] overflow-y-auto",
-        "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:rounded-xl sm:max-h-[85vh]",
+        "inset-x-0 bottom-0 rounded-t-2xl max-h-[88dvh] overflow-y-auto",
+        "sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md sm:rounded-xl sm:max-h-[85dvh]",
         className
       )}
       {...props}

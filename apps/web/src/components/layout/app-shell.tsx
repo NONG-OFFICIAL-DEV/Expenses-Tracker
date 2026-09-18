@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-sm text-neutral-500">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-2 text-sm text-neutral-500">
         <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
         Loading...
       </div>
@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-dvh">
       <Sidebar />
       <div className="min-w-0 flex-1">
         <main className="mx-auto max-w-5xl min-w-0 overflow-x-hidden px-4 py-6 pb-24 sm:px-6 sm:pb-6 lg:px-8">{children}</main>

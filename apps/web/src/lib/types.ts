@@ -97,6 +97,8 @@ export interface DashboardSummary {
 export interface MonthlyReportRow {
   categoryId: string;
   name: string;
+  parentId: string | null;
+  parentName: string | null;
   months: number[];
 }
 

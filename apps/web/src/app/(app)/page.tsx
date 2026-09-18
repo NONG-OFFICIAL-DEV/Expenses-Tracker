@@ -49,7 +49,7 @@ export default function DashboardPage() {
         <p className="text-sm text-neutral-500">Here&apos;s how your money looks this month.</p>
       </div>
 
-      <div className="no-scrollbar flex max-h-[calc(100vh-220px)] flex-col gap-6 overflow-y-auto">
+      <div className="no-scrollbar flex max-h-[calc(100dvh-220px)] flex-col gap-6 overflow-y-auto">
         {summary && <SummaryCards summary={summary} currency={currency} />}
 
         <Card>

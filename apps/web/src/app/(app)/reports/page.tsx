@@ -17,7 +17,7 @@ export default function ReportsPage() {
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Reports</h1>
 
-      <div className="no-scrollbar flex max-h-[calc(100vh-220px)] flex-col gap-6 overflow-y-auto">
+      <div className="no-scrollbar flex max-h-[calc(100dvh-220px)] flex-col gap-6 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
             <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />

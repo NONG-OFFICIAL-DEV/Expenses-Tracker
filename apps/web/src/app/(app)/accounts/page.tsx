@@ -46,7 +46,7 @@ export default function AccountsPage() {
           }
         />
       ) : (
-        <div className="no-scrollbar max-h-[calc(100vh-220px)] overflow-y-auto">
+        <div className="no-scrollbar max-h-[calc(100dvh-220px)] overflow-y-auto">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {accounts.map((account) => (
               <AccountCard key={account.id} account={account} />

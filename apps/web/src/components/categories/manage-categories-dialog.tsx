@@ -44,7 +44,7 @@ export function ManageCategoriesDialog({ open, onOpenChange }: ManageCategoriesD
           </TabsList>
         </Tabs>
 
-        <div className="no-scrollbar mt-4 flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
+        <div className="no-scrollbar mt-4 flex max-h-[50dvh] flex-col gap-3 overflow-y-auto">
           {groups.map(({ parent, children }) => (
             <div key={parent.id} className="flex flex-col gap-1 rounded-lg border border-neutral-100 p-2">
               <CategoryRow category={parent} canDelete={parent.userId === user?.id} bold />
