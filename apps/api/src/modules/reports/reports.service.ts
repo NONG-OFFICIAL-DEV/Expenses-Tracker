@@ -6,8 +6,9 @@ export async function getMonthlyReport(prisma: PrismaClient, userId: string, que
   const start = new Date(Date.UTC(year, 0, 1));
   const end = new Date(Date.UTC(year + 1, 0, 1));
 
+  const kind = query.kind ?? "EXPENSE";
   const transactions = await prisma.transaction.findMany({
-    where: { userId, type: "EXPENSE", date: { gte: start, lt: end } },
+    where: { userId, type: kind, date: { gte: start, lt: end } },
     select: { amount: true, date: true, category: { select: { id: true, name: true, parentId: true } } },
   });
 
