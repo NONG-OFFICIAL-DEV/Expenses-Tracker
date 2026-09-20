@@ -5,6 +5,7 @@ import { Loader2, MoreVertical, Receipt, Tag } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ManageCategoriesDialog } from "@/components/categories/manage-categories-dialog";
 import { TransactionListItem } from "@/components/transactions/transaction-list-item";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";
@@ -12,19 +13,34 @@ import { useRecentTransactions } from "@/hooks/use-transactions";
 import { useAccounts } from "@/hooks/use-accounts";
 import { groupTransactionsByDate } from "@/lib/group-by-date";
 
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const ALL_TIME = "all";
+
 export default function TransactionsPage() {
   const { data: accounts } = useAccounts();
+  const [manageCategoriesOpen, setManageCategoriesOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>(ALL_TIME);
+
+  const dateFilter = useMemo(() => {
+    if (selectedMonth === ALL_TIME) return {};
+    const month = Number(selectedMonth);
+    const year = new Date().getFullYear();
+    return {
+      dateFrom: new Date(Date.UTC(year, month, 1)),
+      dateTo: new Date(Date.UTC(year, month + 1, 1)),
+    };
+  }, [selectedMonth]);
+
   const {
     data,
     isLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useRecentTransactions();
+  } = useRecentTransactions(dateFilter);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const [manageCategoriesOpen, setManageCategoriesOpen] = useState(false);
 
   const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
   const groups = useMemo(() => groupTransactionsByDate(items), [items]);
@@ -47,21 +63,38 @@ export default function TransactionsPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Transactions</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Transaction options">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onSelect={() => setManageCategoriesOpen(true)}>
-              <Tag className="h-4 w-4" />
-              Manage categories
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          {hasAccounts && (
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="h-8 w-auto gap-1 rounded-full border-0 bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-900 hover:bg-neutral-200 focus:ring-0 focus:ring-offset-0">
+                <SelectValue>{selectedMonth === ALL_TIME ? "All time" : MONTH_LABELS[Number(selectedMonth)]}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_TIME}>All time</SelectItem>
+                {MONTH_LABELS.map((label, index) => (
+                  <SelectItem key={label} value={String(index)}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Transaction options">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onSelect={() => setManageCategoriesOpen(true)}>
+                <Tag className="h-4 w-4" />
+                Manage categories
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <ManageCategoriesDialog open={manageCategoriesOpen} onOpenChange={setManageCategoriesOpen} />
@@ -80,7 +113,7 @@ export default function TransactionsPage() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title="No transactions yet"
+          title={selectedMonth === ALL_TIME ? "No transactions yet" : `No transactions in ${MONTH_LABELS[Number(selectedMonth)]}`}
           description="Log your first income or expense using the + button below."
           action={<TransactionFormDialog trigger={<Button>Add a transaction</Button>} />}
         />

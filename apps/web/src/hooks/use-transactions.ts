@@ -20,12 +20,17 @@ export function useTransactions(filters: Partial<TransactionFiltersInput>) {
   });
 }
 
-export function useRecentTransactions() {
+export function useRecentTransactions(filters: { dateFrom?: Date; dateTo?: Date } = {}) {
   return useInfiniteQuery({
-    queryKey: ["transactions", "recent"],
+    queryKey: ["transactions", "recent", filters.dateFrom?.toISOString(), filters.dateTo?.toISOString()],
     queryFn: ({ pageParam }) =>
       api.get<TransactionListResponse>(
-        `/transactions${toQueryString({ page: pageParam, pageSize: RECENT_PAGE_SIZE })}`
+        `/transactions${toQueryString({
+          page: pageParam,
+          pageSize: RECENT_PAGE_SIZE,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+        })}`
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
