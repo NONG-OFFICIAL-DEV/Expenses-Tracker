@@ -36,10 +36,14 @@ declare global {
 // starts below it, so contentSafeAreaInset.top is legitimately 0 - trust
 // that. safeAreaInset (the device notch alone) is NOT a substitute: adding
 // it plus a guessed "chrome row" double-counts space Telegram's native
-// layout already accounted for, which is what caused the oversized gap.
-// This fallback is only for clients old enough not to expose the property
-// at all.
-const FALLBACK_HEADER_OFFSET_PX = 24;
+// layout already accounted for, which caused an oversized gap in that mode.
+//
+// Clients too old to support contentSafeAreaInset at all (property is
+// undefined, not just 0) are usually the ones showing Telegram's compact
+// floating close/menu pills *over* the content instead of a docked title
+// bar - there's no signal to tell us the real inset, so assume the worst
+// case (floating overlay) rather than under-padding into an overlap.
+const FALLBACK_HEADER_OFFSET_PX = 96;
 
 let readyCalled = false;
 
