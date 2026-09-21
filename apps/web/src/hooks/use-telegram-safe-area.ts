@@ -30,12 +30,16 @@ declare global {
   }
 }
 
-// Telegram's own close/menu chrome floats over the top of the page and isn't
-// covered by env(safe-area-inset-top) (that's only the device notch/status
-// bar). Bot API 8.0+ exposes contentSafeAreaInset/safeAreaInset for exactly
-// this; older clients that don't expose either get this conservative fallback
-// so the header still clears Telegram's overlay controls.
-const FALLBACK_HEADER_OFFSET_PX = 56;
+// contentSafeAreaInset (Bot API 8.0+) is the value Telegram itself computes
+// for exactly this: how much of the top is covered by ITS OWN chrome right
+// now. When Telegram shows a real docked title bar the content area already
+// starts below it, so contentSafeAreaInset.top is legitimately 0 - trust
+// that. safeAreaInset (the device notch alone) is NOT a substitute: adding
+// it plus a guessed "chrome row" double-counts space Telegram's native
+// layout already accounted for, which is what caused the oversized gap.
+// This fallback is only for clients old enough not to expose the property
+// at all.
+const FALLBACK_HEADER_OFFSET_PX = 24;
 
 let readyCalled = false;
 
@@ -54,8 +58,8 @@ export function applyTelegramSafeArea() {
     webApp.expand();
   }
 
-  const top = webApp.contentSafeAreaInset?.top ?? webApp.safeAreaInset?.top ?? 0;
-  const offset = top > 0 ? top : FALLBACK_HEADER_OFFSET_PX;
+  const offset = webApp.contentSafeAreaInset ? webApp.contentSafeAreaInset.top : FALLBACK_HEADER_OFFSET_PX;
+
   document.documentElement.style.setProperty("--tg-header-offset", `${offset}px`);
 }
 
