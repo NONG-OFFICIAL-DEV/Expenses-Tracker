@@ -4,6 +4,10 @@
   color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
+  /* How much vertical space Telegram's own Mini App chrome (close/menu
+     buttons) reserves at the top, set at runtime by useTelegramSafeArea().
+     0 outside Telegram, so this is a no-op on the regular website. */
+  --tg-header-offset: 0px;
 }
 
 @theme inline {

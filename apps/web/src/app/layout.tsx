@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
+import { TelegramScript } from "@/components/telegram-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-neutral-50 text-neutral-900">
+        {/* Telegram Mini Apps SDK - loaded without blocking hydration; once ready it
+            exposes window.Telegram.WebApp.contentSafeAreaInset, used to keep our
+            header clear of Telegram's own close/menu chrome. */}
+        <TelegramScript />
         <Providers>{children}</Providers>
       </body>
     </html>
