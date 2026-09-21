@@ -28,6 +28,10 @@ declare global {
   interface Window {
     Telegram?: { WebApp?: TelegramWebApp };
   }
+  interface Navigator {
+    // iOS-only flag for "launched from an Add to Home Screen icon".
+    standalone?: boolean;
+  }
 }
 
 // contentSafeAreaInset (Bot API 8.0+) is the value Telegram itself computes
@@ -51,6 +55,18 @@ function isRealTelegramClient(webApp: TelegramWebApp) {
   return Boolean(webApp.initData) || (Boolean(webApp.platform) && webApp.platform !== "unknown");
 }
 
+// A Mini App launched from its "Add to Home Screen" icon runs standalone,
+// outside any chat - there's no chat header context for Telegram to dock a
+// title bar into, so it always uses the compact floating close/menu chrome
+// (never the docked title bar). At least on some clients this launch mode
+// doesn't populate contentSafeAreaInset correctly (reports 0 even though the
+// overlay is genuinely there), so trusting a reported 0 the way we do for a
+// normal in-chat launch isn't safe here - force the fallback instead.
+function isStandaloneLaunch() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
 /** Reads Telegram's safe area (if available) and sets --tg-header-offset on <html>. Safe to call repeatedly. No-op outside a real Telegram client, so the plain website is never affected. */
 export function applyTelegramSafeArea() {
   const webApp = window.Telegram?.WebApp;
@@ -62,7 +78,8 @@ export function applyTelegramSafeArea() {
     webApp.expand();
   }
 
-  const offset = webApp.contentSafeAreaInset ? webApp.contentSafeAreaInset.top : FALLBACK_HEADER_OFFSET_PX;
+  const reported = webApp.contentSafeAreaInset ? webApp.contentSafeAreaInset.top : FALLBACK_HEADER_OFFSET_PX;
+  const offset = isStandaloneLaunch() ? Math.max(reported, FALLBACK_HEADER_OFFSET_PX) : reported;
 
   document.documentElement.style.setProperty("--tg-header-offset", `${offset}px`);
 }
