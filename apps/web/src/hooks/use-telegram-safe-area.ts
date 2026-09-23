@@ -22,6 +22,10 @@ interface TelegramWebApp {
   // tells the two situations apart.
   initData?: string;
   platform?: string;
+  version?: string;
+  viewportHeight?: number;
+  viewportStableHeight?: number;
+  isExpanded?: boolean;
 }
 
 declare global {
@@ -51,7 +55,7 @@ const FALLBACK_HEADER_OFFSET_PX = 96;
 
 let readyCalled = false;
 
-function isRealTelegramClient(webApp: TelegramWebApp) {
+export function isRealTelegramClient(webApp: TelegramWebApp) {
   return Boolean(webApp.initData) || (Boolean(webApp.platform) && webApp.platform !== "unknown");
 }
 
@@ -62,9 +66,30 @@ function isRealTelegramClient(webApp: TelegramWebApp) {
 // doesn't populate contentSafeAreaInset correctly (reports 0 even though the
 // overlay is genuinely there), so trusting a reported 0 the way we do for a
 // normal in-chat launch isn't safe here - force the fallback instead.
-function isStandaloneLaunch() {
+export function isStandaloneLaunch() {
   if (typeof window === "undefined") return false;
   return window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+/** Raw snapshot for the temporary on-screen diagnostic badge - see TelegramDebugBadge. */
+export function getTelegramDiagnostics() {
+  const webApp = window.Telegram?.WebApp;
+  return {
+    hasWebApp: Boolean(webApp),
+    isRealClient: webApp ? isRealTelegramClient(webApp) : false,
+    isStandalone: isStandaloneLaunch(),
+    platform: webApp?.platform ?? null,
+    version: webApp?.version ?? null,
+    initDataLength: webApp?.initData?.length ?? 0,
+    contentSafeAreaInset: webApp?.contentSafeAreaInset ?? null,
+    safeAreaInset: webApp?.safeAreaInset ?? null,
+    isExpanded: webApp?.isExpanded ?? null,
+    viewportHeight: webApp?.viewportHeight ?? null,
+    viewportStableHeight: webApp?.viewportStableHeight ?? null,
+    windowInnerHeight: typeof window !== "undefined" ? window.innerHeight : null,
+    screenHeight: typeof window !== "undefined" ? window.screen?.height : null,
+    appliedOffset: typeof document !== "undefined" ? getComputedStyle(document.documentElement).getPropertyValue("--tg-header-offset").trim() : null,
+  };
 }
 
 /** Reads Telegram's safe area (if available) and sets --tg-header-offset on <html>. Safe to call repeatedly. No-op outside a real Telegram client, so the plain website is never affected. */
