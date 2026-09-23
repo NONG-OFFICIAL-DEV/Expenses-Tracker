@@ -26,6 +26,11 @@ interface TelegramWebApp {
   viewportHeight?: number;
   viewportStableHeight?: number;
   isExpanded?: boolean;
+  // True when the bot's Menu Button "Launch mode" is set to Fullscreen (or
+  // requestFullscreen() was called) - the app then always renders edge-to-edge
+  // with Telegram's close/menu controls floating over the content, since
+  // there's no docked-title-bar alternative in this mode.
+  isFullscreen?: boolean;
 }
 
 declare global {
@@ -71,6 +76,15 @@ export function isStandaloneLaunch() {
   return window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 
+// A bot's Main App can be configured in BotFather with Launch mode =
+// Fullscreen - opened this way (t.me/bot/appname, not the menu button), the
+// app always renders edge-to-edge with the close/menu controls floating over
+// the content, the same "no docked alternative" situation as isStandaloneLaunch,
+// so it gets the same fallback-floor treatment.
+export function isFullscreenLaunch(webApp: TelegramWebApp) {
+  return webApp.isFullscreen === true;
+}
+
 /** Raw snapshot for the temporary on-screen diagnostic badge - see TelegramDebugBadge. */
 export function getTelegramDiagnostics() {
   const webApp = window.Telegram?.WebApp;
@@ -84,6 +98,7 @@ export function getTelegramDiagnostics() {
     contentSafeAreaInset: webApp?.contentSafeAreaInset ?? null,
     safeAreaInset: webApp?.safeAreaInset ?? null,
     isExpanded: webApp?.isExpanded ?? null,
+    isFullscreen: webApp?.isFullscreen ?? null,
     viewportHeight: webApp?.viewportHeight ?? null,
     viewportStableHeight: webApp?.viewportStableHeight ?? null,
     windowInnerHeight: typeof window !== "undefined" ? window.innerHeight : null,
@@ -104,7 +119,8 @@ export function applyTelegramSafeArea() {
   }
 
   const reported = webApp.contentSafeAreaInset ? webApp.contentSafeAreaInset.top : FALLBACK_HEADER_OFFSET_PX;
-  const offset = isStandaloneLaunch() ? Math.max(reported, FALLBACK_HEADER_OFFSET_PX) : reported;
+  const forceFloor = isStandaloneLaunch() || isFullscreenLaunch(webApp);
+  const offset = forceFloor ? Math.max(reported, FALLBACK_HEADER_OFFSET_PX) : reported;
 
   const current = document.documentElement.style.getPropertyValue("--tg-header-offset");
   const next = `${offset}px`;
@@ -140,6 +156,7 @@ export function useTelegramSafeArea() {
     webApp.onEvent("contentSafeAreaChanged", applyTelegramSafeArea);
     webApp.onEvent("safeAreaChanged", applyTelegramSafeArea);
     webApp.onEvent("viewportChanged", applyTelegramSafeArea);
+    webApp.onEvent("fullscreenChanged", applyTelegramSafeArea);
 
     const interval = window.setInterval(applyTelegramSafeArea, 1000);
 
@@ -147,6 +164,7 @@ export function useTelegramSafeArea() {
       webApp.offEvent("contentSafeAreaChanged", applyTelegramSafeArea);
       webApp.offEvent("safeAreaChanged", applyTelegramSafeArea);
       webApp.offEvent("viewportChanged", applyTelegramSafeArea);
+      webApp.offEvent("fullscreenChanged", applyTelegramSafeArea);
       window.clearInterval(interval);
     };
   }, []);
