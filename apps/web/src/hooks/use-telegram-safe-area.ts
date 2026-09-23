@@ -106,13 +106,29 @@ export function applyTelegramSafeArea() {
   const reported = webApp.contentSafeAreaInset ? webApp.contentSafeAreaInset.top : FALLBACK_HEADER_OFFSET_PX;
   const offset = isStandaloneLaunch() ? Math.max(reported, FALLBACK_HEADER_OFFSET_PX) : reported;
 
-  document.documentElement.style.setProperty("--tg-header-offset", `${offset}px`);
+  const current = document.documentElement.style.getPropertyValue("--tg-header-offset");
+  const next = `${offset}px`;
+  if (current !== next) {
+    document.documentElement.style.setProperty("--tg-header-offset", next);
+  }
 }
 
 /**
- * Keeps --tg-header-offset in sync with Telegram's chrome. The telegram-web-app.js
- * script loads asynchronously (see root layout's onLoad), so this also re-checks on
- * mount to cover client-side navigations after the script has already loaded.
+ * Keeps --tg-header-offset in sync with Telegram's chrome. AppShell (where this
+ * runs) is the shared protected layout, so this effect mounts once per app
+ * session, not once per page - client-side navigations never re-trigger it.
+ *
+ * Telegram's own chrome can change *after* that single mount (its docked title
+ * bar can later collapse into the floating close/menu pills mid-session), and
+ * contentSafeAreaInset updates to match - but on real devices this has been
+ * observed to update the live property without reliably firing
+ * contentSafeAreaChanged/viewportChanged, leaving --tg-header-offset frozen at
+ * a now-stale value (confirmed via on-device diagnostics: contentSafeAreaInset
+ * read live as 46 while the applied offset was still stuck at 0). The events
+ * are kept for instant response when they do fire, but a poll is the actual
+ * safety net - cheap (a couple of property reads, a no-op style write unless
+ * the value changed) and it's the only thing that reproduced correctly on
+ * device.
  */
 export function useTelegramSafeArea() {
   useEffect(() => {
@@ -125,10 +141,13 @@ export function useTelegramSafeArea() {
     webApp.onEvent("safeAreaChanged", applyTelegramSafeArea);
     webApp.onEvent("viewportChanged", applyTelegramSafeArea);
 
+    const interval = window.setInterval(applyTelegramSafeArea, 1000);
+
     return () => {
       webApp.offEvent("contentSafeAreaChanged", applyTelegramSafeArea);
       webApp.offEvent("safeAreaChanged", applyTelegramSafeArea);
       webApp.offEvent("viewportChanged", applyTelegramSafeArea);
+      window.clearInterval(interval);
     };
   }, []);
 }
