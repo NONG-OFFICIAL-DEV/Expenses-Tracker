@@ -85,28 +85,6 @@ export function isFullscreenLaunch(webApp: TelegramWebApp) {
   return webApp.isFullscreen === true;
 }
 
-/** Raw snapshot for the temporary on-screen diagnostic badge - see TelegramDebugBadge. */
-export function getTelegramDiagnostics() {
-  const webApp = window.Telegram?.WebApp;
-  return {
-    hasWebApp: Boolean(webApp),
-    isRealClient: webApp ? isRealTelegramClient(webApp) : false,
-    isStandalone: isStandaloneLaunch(),
-    platform: webApp?.platform ?? null,
-    version: webApp?.version ?? null,
-    initDataLength: webApp?.initData?.length ?? 0,
-    contentSafeAreaInset: webApp?.contentSafeAreaInset ?? null,
-    safeAreaInset: webApp?.safeAreaInset ?? null,
-    isExpanded: webApp?.isExpanded ?? null,
-    isFullscreen: webApp?.isFullscreen ?? null,
-    viewportHeight: webApp?.viewportHeight ?? null,
-    viewportStableHeight: webApp?.viewportStableHeight ?? null,
-    windowInnerHeight: typeof window !== "undefined" ? window.innerHeight : null,
-    screenHeight: typeof window !== "undefined" ? window.screen?.height : null,
-    appliedOffset: typeof document !== "undefined" ? getComputedStyle(document.documentElement).getPropertyValue("--tg-header-offset").trim() : null,
-  };
-}
-
 /** Reads Telegram's safe area (if available) and sets --tg-header-offset on <html>. Safe to call repeatedly. No-op outside a real Telegram client, so the plain website is never affected. */
 export function applyTelegramSafeArea() {
   const webApp = window.Telegram?.WebApp;

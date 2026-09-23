@@ -13,7 +13,7 @@ export function BottomNav() {
       aria-label="Primary"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:hidden"
     >
-      <div className="pointer-events-auto flex items-center gap-4 rounded-full border border-neutral-200/70 bg-white/85 p-2 shadow-lg backdrop-blur-md">
+      <div className="pointer-events-auto flex -translate-x-3 items-center gap-4 rounded-full border border-neutral-200/70 bg-white/85 p-2 shadow-lg backdrop-blur-md">
         {NAV_ITEMS.map((item) => {
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const Icon = item.icon;

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTelegramSafeArea } from "@/hooks/use-telegram-safe-area";
-import { TelegramDebugBadge } from "@/components/telegram-debug-badge";
 import { Sidebar } from "./sidebar";
 import { BottomNav } from "./bottom-nav";
 import { FloatingAddButton } from "./floating-add-button";
@@ -44,7 +43,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <BottomNav />
       <FloatingAddButton />
-      <TelegramDebugBadge />
     </div>
   );
 }
