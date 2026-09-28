@@ -14,12 +14,14 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
+  Star,
   Tag,
   Wallet,
 } from "lucide-react";
 import { createTransactionSchema, type CreateTransactionInput } from "@/lib/shared";
 import { resolveAccountIcon } from "@/lib/account-icons";
 import { resolveAccountColor } from "@/lib/account-colors";
+import { ACCOUNT_TYPE_LABELS } from "@/lib/account-type-labels";
 import { BadgeButton } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -95,7 +97,7 @@ function AccountSwitcher({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent title={dialogTitle}>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-2 mb-6">
             {accounts.map((account) => {
               const OptionIcon = resolveAccountIcon(account);
               const optionColor = resolveAccountColor(account);
@@ -108,8 +110,8 @@ function AccountSwitcher({
                     onChange(account.id);
                     setOpen(false);
                   }}
-                  className={`flex items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-neutral-50 ${
-                    isSelected ? "bg-indigo-50" : ""
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors hover:bg-neutral-50 ${
+                    isSelected ? "border-indigo-200 bg-indigo-50" : "border-neutral-200 bg-white"
                   }`}
                 >
                   <span
@@ -118,7 +120,13 @@ function AccountSwitcher({
                   >
                     <OptionIcon className="h-4 w-4" />
                   </span>
-                  <span className="flex-1 truncate text-sm font-medium text-neutral-900">{account.name}</span>
+                  <span className="flex-1 overflow-hidden">
+                    <span className="flex items-center gap-1 truncate text-sm font-medium text-neutral-900">
+                      {account.name}
+                      {account.isPrimary && <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />}
+                    </span>
+                    <span className="block text-xs text-neutral-500">{ACCOUNT_TYPE_LABELS[account.type]}</span>
+                  </span>
                   {isSelected && <Check className="h-4 w-4 shrink-0 text-indigo-600" />}
                 </button>
               );
