@@ -43,5 +43,9 @@
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@emnapi/core": "^1.11.1",
+    "@emnapi/runtime": "^1.11.1"
   }
 }
