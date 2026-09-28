@@ -17,6 +17,7 @@ export interface Account {
   currency: string;
   openingBalance: string;
   isActive: boolean;
+  isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
 }

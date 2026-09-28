@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, MoreVertical, Pencil, ScaleIcon, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, MoreVertical, Pencil, ScaleIcon, Star, Trash2 } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
 import { resolveAccountIcon } from "@/lib/account-icons";
 import { resolveAccountColor } from "@/lib/account-colors";
@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAccount, useDeleteAccount } from "@/hooks/use-accounts";
+import { useAccount, useDeleteAccount, useUpdateAccount } from "@/hooks/use-accounts";
 import { useTransactions } from "@/hooks/use-transactions";
 import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
 import { ReconcileDialog } from "@/components/accounts/reconcile-dialog";
@@ -38,6 +38,7 @@ export default function AccountDetailPage() {
   const { data: account, isLoading } = useAccount(params.id);
   const { data: transactions } = useTransactions({ accountId: params.id, page: 1, pageSize: 10 });
   const deleteMutation = useDeleteAccount();
+  const updateMutation = useUpdateAccount(account?.id ?? "");
   const [editOpen, setEditOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -76,7 +77,10 @@ export default function AccountDetailPage() {
                 <AccountIconGlyph account={account} className="h-4.5 w-4.5" />
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight">{account.name}</p>
+                <p className="flex items-center gap-1 text-sm font-semibold leading-tight">
+                  {account.name}
+                  {account.isPrimary && <Star className="h-3 w-3 shrink-0 fill-amber-300 text-amber-300" />}
+                </p>
                 <p className="text-xs leading-tight text-white/70">{ACCOUNT_TYPE_LABELS[account.type]}</p>
               </div>
             </div>
@@ -100,6 +104,12 @@ export default function AccountDetailPage() {
                   <ScaleIcon className="h-4 w-4" />
                   Recalculate balance
                 </DropdownMenuItem>
+                {!account.isPrimary && (
+                  <DropdownMenuItem onSelect={() => updateMutation.mutate({ isPrimary: true })}>
+                    <Star className="h-4 w-4" />
+                    Set as primary
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={() => setDeleteOpen(true)}

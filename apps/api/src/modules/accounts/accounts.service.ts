@@ -45,7 +45,8 @@ export async function getAccount(prisma: PrismaClient, userId: string, accountId
   return { ...account, balance };
 }
 
-export function createAccount(prisma: PrismaClient, userId: string, input: CreateAccountInput) {
+export async function createAccount(prisma: PrismaClient, userId: string, input: CreateAccountInput) {
+  const existingCount = await prisma.account.count({ where: { userId } });
   return prisma.account.create({
     data: {
       userId,
@@ -55,6 +56,9 @@ export function createAccount(prisma: PrismaClient, userId: string, input: Creat
       color: input.color ?? null,
       currency: input.currency,
       openingBalance: new Decimal(input.openingBalance),
+      // The first account a user creates has nothing to default to in the
+      // transaction form otherwise, so it becomes primary automatically.
+      isPrimary: existingCount === 0,
     },
   });
 }
@@ -62,18 +66,28 @@ export function createAccount(prisma: PrismaClient, userId: string, input: Creat
 export async function updateAccount(prisma: PrismaClient, userId: string, accountId: string, input: UpdateAccountInput) {
   const existing = await prisma.account.findFirst({ where: { id: accountId, userId } });
   if (!existing) throw new NotFoundError("Account not found");
-  return prisma.account.update({
-    where: { id: accountId },
-    data: {
-      name: input.name,
-      type: input.type,
-      icon: input.icon,
-      color: input.color,
-      currency: input.currency,
-      isActive: input.isActive,
-      openingBalance: input.openingBalance !== undefined ? new Decimal(input.openingBalance) : undefined,
-    },
-  });
+
+  const data = {
+    name: input.name,
+    type: input.type,
+    icon: input.icon,
+    color: input.color,
+    currency: input.currency,
+    isActive: input.isActive,
+    isPrimary: input.isPrimary,
+    openingBalance: input.openingBalance !== undefined ? new Decimal(input.openingBalance) : undefined,
+  };
+
+  // Only one account can be primary at a time, so making this one primary
+  // means unsetting whichever account currently holds it first.
+  if (input.isPrimary === true) {
+    return prisma.$transaction(async (tx) => {
+      await tx.account.updateMany({ where: { userId, isPrimary: true }, data: { isPrimary: false } });
+      return tx.account.update({ where: { id: accountId }, data });
+    });
+  }
+
+  return prisma.account.update({ where: { id: accountId }, data });
 }
 
 export async function deleteAccount(prisma: PrismaClient, userId: string, accountId: string) {

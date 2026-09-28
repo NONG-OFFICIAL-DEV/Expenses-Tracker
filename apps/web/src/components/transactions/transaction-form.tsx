@@ -4,13 +4,26 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, isToday } from "date-fns";
-import { ArrowDownCircle, ArrowLeftRight, ArrowUpCircle, CalendarIcon, ChevronRight, Plus, Tag, Wallet } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowLeftRight,
+  ArrowRight,
+  ArrowUpCircle,
+  CalendarIcon,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Tag,
+  Wallet,
+} from "lucide-react";
 import { createTransactionSchema, type CreateTransactionInput } from "@/lib/shared";
 import { resolveAccountIcon } from "@/lib/account-icons";
 import { resolveAccountColor } from "@/lib/account-colors";
 import { BadgeButton } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,6 +33,7 @@ import { useAccounts } from "@/hooks/use-accounts";
 import { useCategories } from "@/hooks/use-categories";
 import { useCategoryUsage } from "@/hooks/use-category-usage";
 import { ApiError } from "@/lib/api-client";
+import type { AccountWithBalance } from "@/lib/types";
 import type { Transaction } from "@/lib/types";
 
 const QUICK_CATEGORY_LIMIT = 6;
@@ -42,6 +56,77 @@ const TYPE_LABEL: Record<CreateTransactionInput["type"], string> = {
 const rowTriggerClass =
   "h-auto w-full items-center justify-between rounded-none border-0 border-b border-neutral-200 bg-transparent px-0 py-2 text-base font-medium text-neutral-900 focus:outline-none focus:ring-0 focus-visible:ring-0 disabled:opacity-50";
 
+// Compact "switcher" pill used for picking an account right under the amount,
+// instead of a full labeled row further down the form - opens a bottom sheet
+// (the same Dialog primitive that already renders as a bottom sheet on mobile)
+// listing every account to pick from.
+function AccountSwitcher({
+  accounts,
+  value,
+  onChange,
+  placeholder,
+  dialogTitle,
+}: {
+  accounts: AccountWithBalance[];
+  value?: string;
+  onChange: (id: string) => void;
+  placeholder: string;
+  dialogTitle: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = accounts.find((a) => a.id === value);
+  const Icon = selected ? resolveAccountIcon(selected) : Wallet;
+  const iconColor = selected ? resolveAccountColor(selected) : undefined;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200"
+      >
+        <Icon className="h-3.5 w-3.5" style={iconColor ? { color: iconColor } : undefined} />
+        <span className="max-w-[7rem] truncate">{selected ? selected.name : placeholder}</span>
+        <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent title={dialogTitle}>
+          <div className="flex flex-col gap-1">
+            {accounts.map((account) => {
+              const OptionIcon = resolveAccountIcon(account);
+              const optionColor = resolveAccountColor(account);
+              const isSelected = value === account.id;
+              return (
+                <button
+                  key={account.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(account.id);
+                    setOpen(false);
+                  }}
+                  className={`flex items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-neutral-50 ${
+                    isSelected ? "bg-indigo-50" : ""
+                  }`}
+                >
+                  <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: `${optionColor}26`, color: optionColor }}
+                  >
+                    <OptionIcon className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1 truncate text-sm font-medium text-neutral-900">{account.name}</span>
+                  {isSelected && <Check className="h-4 w-4 shrink-0 text-indigo-600" />}
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmitting }: TransactionFormProps) {
   const { data: accounts = [] } = useAccounts();
   const { data: categories = [] } = useCategories();
@@ -54,6 +139,7 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
     register,
     handleSubmit,
     watch,
+    setValue,
     control,
     formState: { errors },
   } = useForm<TransactionFormValues>({
@@ -82,6 +168,19 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
     amountRef.current?.focus();
     amountRef.current?.select();
   }, []);
+
+  const didDefaultAccount = useRef(false);
+  useEffect(() => {
+    // Only for a brand-new transaction (editing already has its own account),
+    // and only once - accounts load in asynchronously after the form's own
+    // defaultValues are already set, so this fills the gap once they arrive.
+    if (defaultValues || didDefaultAccount.current || accounts.length === 0) return;
+    const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
+    if (primary) {
+      setValue("accountId", primary.id);
+      didDefaultAccount.current = true;
+    }
+  }, [accounts, defaultValues, setValue]);
 
   const filteredCategories = useMemo(() => {
     const parentIds = new Set(categories.map((c) => c.parentId).filter(Boolean));
@@ -163,6 +262,56 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
         {errors.amount && <p className="text-xs text-red-600">{errors.amount.message}</p>}
       </div>
 
+      <div className="flex flex-col items-center gap-1">
+        {type === "TRANSFER" ? (
+          <div className="flex items-center gap-2">
+            <Controller
+              control={control}
+              name="accountId"
+              render={({ field }) => (
+                <AccountSwitcher
+                  accounts={accounts}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="From account"
+                  dialogTitle="From account"
+                />
+              )}
+            />
+            <ArrowRight className="h-4 w-4 shrink-0 text-neutral-300" />
+            <Controller
+              control={control}
+              name="toAccountId"
+              render={({ field }) => (
+                <AccountSwitcher
+                  accounts={accounts}
+                  value={field.value ?? undefined}
+                  onChange={field.onChange}
+                  placeholder="To account"
+                  dialogTitle="To account"
+                />
+              )}
+            />
+          </div>
+        ) : (
+          <Controller
+            control={control}
+            name="accountId"
+            render={({ field }) => (
+              <AccountSwitcher
+                accounts={accounts}
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Select account"
+                dialogTitle="Select account"
+              />
+            )}
+          />
+        )}
+        {errors.accountId && <p className="text-xs text-red-600">{errors.accountId.message}</p>}
+        {errors.toAccountId && <p className="text-xs text-red-600">{errors.toAccountId.message}</p>}
+      </div>
+
       {type !== "TRANSFER" && (
         <div className="flex flex-col gap-1">
           <Label className="text-xs font-medium text-neutral-500">Category</Label>
@@ -204,72 +353,6 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
             )}
           />
           {errors.categoryId && <p className="text-xs text-red-600">{errors.categoryId.message}</p>}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-1">
-        <Label className="text-xs font-medium text-neutral-500">{type === "TRANSFER" ? "From account" : "Account"}</Label>
-        <Controller
-          control={control}
-          name="accountId"
-          render={({ field }) => {
-            const selected = accounts.find((a) => a.id === field.value);
-            const Icon = selected ? resolveAccountIcon(selected) : Wallet;
-            const iconColor = selected ? resolveAccountColor(selected) : undefined;
-            return (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger hideIcon className={rowTriggerClass}>
-                  <span className="flex items-center gap-2">
-                    <Icon className={iconColor ? "h-4 w-4" : "h-4 w-4 text-neutral-400"} style={iconColor ? { color: iconColor } : undefined} />
-                    <SelectValue placeholder="Select account" />
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-neutral-300" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            );
-          }}
-        />
-        {errors.accountId && <p className="text-xs text-red-600">{errors.accountId.message}</p>}
-      </div>
-
-      {type === "TRANSFER" && (
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs font-medium text-neutral-500">To account</Label>
-          <Controller
-            control={control}
-            name="toAccountId"
-            render={({ field }) => {
-              const selected = accounts.find((a) => a.id === field.value);
-              const Icon = selected ? resolveAccountIcon(selected) : Wallet;
-              const iconColor = selected ? resolveAccountColor(selected) : undefined;
-              return (
-                <Select value={field.value ?? undefined} onValueChange={field.onChange}>
-                  <SelectTrigger hideIcon className={rowTriggerClass}>
-                    <span className="flex items-center gap-2">
-                      <Icon className={iconColor ? "h-4 w-4" : "h-4 w-4 text-neutral-400"} style={iconColor ? { color: iconColor } : undefined} />
-                      <SelectValue placeholder="Select destination account" />
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-neutral-300" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              );
-            }}
-          />
-          {errors.toAccountId && <p className="text-xs text-red-600">{errors.toAccountId.message}</p>}
         </div>
       )}
 

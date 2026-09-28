@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MoreVertical, Pencil, ScaleIcon, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, ScaleIcon, Star, Trash2 } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/account-type-labels";
 import { resolveAccountIcon } from "@/lib/account-icons";
 import { resolveAccountColor } from "@/lib/account-colors";
-import { useDeleteAccount } from "@/hooks/use-accounts";
+import { useDeleteAccount, useUpdateAccount } from "@/hooks/use-accounts";
 import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
 import { ReconcileDialog } from "@/components/accounts/reconcile-dialog";
 import type { AccountWithBalance } from "@/lib/types";
@@ -29,6 +29,7 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
   const [reconcileOpen, setReconcileOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteMutation = useDeleteAccount();
+  const updateMutation = useUpdateAccount(account.id);
 
   return (
     <>
@@ -45,7 +46,10 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
               <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="truncate font-medium text-neutral-900">{account.name}</p>
+              <p className="flex items-center gap-1 truncate font-medium text-neutral-900">
+                {account.name}
+                {account.isPrimary && <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />}
+              </p>
               <p className="text-xs text-neutral-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
             </div>
           </Link>
@@ -65,6 +69,12 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
                 <ScaleIcon className="h-4 w-4" />
                 Recalculate balance
               </DropdownMenuItem>
+              {!account.isPrimary && (
+                <DropdownMenuItem onSelect={() => updateMutation.mutate({ isPrimary: true })}>
+                  <Star className="h-4 w-4" />
+                  Set as primary
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={() => setDeleteOpen(true)}

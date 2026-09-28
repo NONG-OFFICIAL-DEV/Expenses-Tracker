@@ -19,6 +19,7 @@ export const updateAccountSchema = z.object({
   currency: z.string().length(3).optional(),
   openingBalance: z.coerce.number().finite().optional(),
   isActive: z.boolean().optional(),
+  isPrimary: z.boolean().optional(),
 });
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 
