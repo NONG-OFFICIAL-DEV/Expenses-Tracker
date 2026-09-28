@@ -85,6 +85,9 @@ function AccountSwitcher({
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200"
       >
+        {/* resolveAccountIcon only ever picks from a fixed, stateless set of lucide
+            icon components, so a different pick between renders is safe to swap in place. */}
+        {/* eslint-disable-next-line react-hooks/static-components */}
         <Icon className="h-3.5 w-3.5" style={iconColor ? { color: iconColor } : undefined} />
         <span className="max-w-[7rem] truncate">{selected ? selected.name : placeholder}</span>
         <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
