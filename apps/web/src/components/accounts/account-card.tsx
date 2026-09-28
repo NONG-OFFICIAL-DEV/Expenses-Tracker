@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { MoreVertical, Pencil, ScaleIcon, Star, Trash2 } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,63 +32,72 @@ export function AccountCard({ account }: { account: AccountWithBalance }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const deleteMutation = useDeleteAccount();
   const updateMutation = useUpdateAccount(account.id);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: account.id });
 
   return (
     <>
-      <Card className="transition-colors" style={{ borderColor: `${colorHex}66` }}>
-        <CardContent className="flex items-center gap-2 p-4">
-          <Link href={`/accounts/${account.id}`} className="flex flex-1 items-center gap-3 overflow-hidden">
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-              style={{ backgroundColor: `${colorHex}26`, color: colorHex }}
-            >
-              {/* resolveAccountIcon only ever picks from a fixed, stateless set of lucide
-                  icon components, so a different pick between renders is safe to swap in place. */}
-              {/* eslint-disable-next-line react-hooks/static-components */}
-              <Icon className="h-5 w-5" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="flex items-center gap-1 truncate font-medium text-neutral-900">
-                {account.name}
-                {account.isPrimary && <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />}
-              </p>
-              <p className="text-xs text-neutral-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
-            </div>
-          </Link>
-          <p className="text-lg font-bold tabular-nums">{formatAmount(account.balance, account.currency, account.type)}</p>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Account options">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => setEditOpen(true)}>
-                <Pencil className="h-4 w-4" />
-                Edit account
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setReconcileOpen(true)}>
-                <ScaleIcon className="h-4 w-4" />
-                Recalculate balance
-              </DropdownMenuItem>
-              {!account.isPrimary && (
-                <DropdownMenuItem onSelect={() => updateMutation.mutate({ isPrimary: true })}>
-                  <Star className="h-4 w-4" />
-                  Set as primary
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => setDeleteOpen(true)}
-                className="text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-700"
+      <div
+        ref={setNodeRef}
+        style={{ transform: CSS.Transform.toString(transform), transition }}
+        className={`touch-none ${isDragging ? "opacity-50" : ""}`}
+        {...attributes}
+        {...listeners}
+      >
+        <Card className="transition-colors" style={{ borderColor: `${colorHex}66` }}>
+          <CardContent className="flex items-center gap-2 p-4">
+            <Link href={`/accounts/${account.id}`} className="flex flex-1 items-center gap-3 overflow-hidden">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                style={{ backgroundColor: `${colorHex}26`, color: colorHex }}
               >
-                <Trash2 className="h-4 w-4" />
-                Delete account
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </CardContent>
-      </Card>
+                {/* resolveAccountIcon only ever picks from a fixed, stateless set of lucide
+                    icon components, so a different pick between renders is safe to swap in place. */}
+                {/* eslint-disable-next-line react-hooks/static-components */}
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="flex items-center gap-1 truncate font-medium text-neutral-900">
+                  {account.name}
+                  {account.isPrimary && <Star className="h-3 w-3 shrink-0 fill-amber-400 text-amber-400" />}
+                </p>
+                <p className="text-xs text-neutral-500">{ACCOUNT_TYPE_LABELS[account.type]}</p>
+              </div>
+            </Link>
+            <p className="text-lg font-bold tabular-nums">{formatAmount(account.balance, account.currency, account.type)}</p>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Account options">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+                  <Pencil className="h-4 w-4" />
+                  Edit account
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setReconcileOpen(true)}>
+                  <ScaleIcon className="h-4 w-4" />
+                  Recalculate balance
+                </DropdownMenuItem>
+                {!account.isPrimary && (
+                  <DropdownMenuItem onSelect={() => updateMutation.mutate({ isPrimary: true })}>
+                    <Star className="h-4 w-4" />
+                    Set as primary
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => setDeleteOpen(true)}
+                  className="text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete account
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </CardContent>
+        </Card>
+      </div>
 
       <AccountFormDialog account={account} open={editOpen} onOpenChange={setEditOpen} />
       <ReconcileDialog accountId={account.id} open={reconcileOpen} onOpenChange={setReconcileOpen} />

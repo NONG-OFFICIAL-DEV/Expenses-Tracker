@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { createAccountSchema, updateAccountSchema, reconcileAccountSchema } from "../../shared/index.js";
+import { createAccountSchema, updateAccountSchema, reconcileAccountSchema, reorderAccountsSchema } from "../../shared/index.js";
 import * as accountsService from "./accounts.service.js";
 
 const idParamSchema = z.object({ id: z.string().cuid() });
@@ -40,6 +40,16 @@ export default async function accountsRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  app.patch("/accounts/reorder", { schema: { body: reorderAccountsSchema } }, async (request, reply) => {
+    try {
+      await accountsService.reorderAccounts(fastify.prisma, request.userId, request.body);
+      return reply.code(204).send();
+    } catch (err) {
+      if (err instanceof accountsService.ValidationError) return reply.code(400).send({ message: err.message });
+      throw err;
+    }
+  });
 
   app.delete("/accounts/:id", { schema: { params: idParamSchema } }, async (request, reply) => {
     try {

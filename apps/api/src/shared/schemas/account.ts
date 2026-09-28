@@ -28,3 +28,8 @@ export const reconcileAccountSchema = z.object({
   note: z.string().max(500).optional(),
 });
 export type ReconcileAccountInput = z.infer<typeof reconcileAccountSchema>;
+
+export const reorderAccountsSchema = z.object({
+  orderedIds: z.array(z.string().cuid()).min(1),
+});
+export type ReorderAccountsInput = z.infer<typeof reorderAccountsSchema>;

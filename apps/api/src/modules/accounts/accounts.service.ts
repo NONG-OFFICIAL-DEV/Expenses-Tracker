@@ -1,8 +1,9 @@
 import type { PrismaClient } from "@prisma/client";
-import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "../../shared/index.js";
+import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput, ReorderAccountsInput } from "../../shared/index.js";
 import { Decimal } from "../../lib/decimal.js";
 
 export class NotFoundError extends Error {}
+export class ValidationError extends Error {}
 
 export async function computeAccountBalance(
   prisma: PrismaClient,
@@ -29,7 +30,7 @@ export async function computeAccountBalance(
 }
 
 export async function listAccounts(prisma: PrismaClient, userId: string) {
-  const accounts = await prisma.account.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
+  const accounts = await prisma.account.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } });
   return Promise.all(
     accounts.map(async (account) => ({
       ...account,
@@ -59,6 +60,7 @@ export async function createAccount(prisma: PrismaClient, userId: string, input:
       // The first account a user creates has nothing to default to in the
       // transaction form otherwise, so it becomes primary automatically.
       isPrimary: existingCount === 0,
+      sortOrder: existingCount,
     },
   });
 }
@@ -88,6 +90,18 @@ export async function updateAccount(prisma: PrismaClient, userId: string, accoun
   }
 
   return prisma.account.update({ where: { id: accountId }, data });
+}
+
+export async function reorderAccounts(prisma: PrismaClient, userId: string, input: ReorderAccountsInput) {
+  const owned = await prisma.account.findMany({ where: { userId }, select: { id: true } });
+  const ownedIds = new Set(owned.map((a) => a.id));
+  if (input.orderedIds.length !== ownedIds.size || !input.orderedIds.every((id) => ownedIds.has(id))) {
+    throw new ValidationError("orderedIds must contain exactly this user's account ids");
+  }
+
+  await prisma.$transaction(
+    input.orderedIds.map((id, index) => prisma.account.update({ where: { id }, data: { sortOrder: index } }))
+  );
 }
 
 export async function deleteAccount(prisma: PrismaClient, userId: string, accountId: string) {

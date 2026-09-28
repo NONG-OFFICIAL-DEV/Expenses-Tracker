@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput } from "@/lib/shared";
+import type { CreateAccountInput, UpdateAccountInput, ReconcileAccountInput, ReorderAccountsInput } from "@/lib/shared";
 import { api } from "@/lib/api-client";
 import type { AccountWithBalance, BalanceAdjustment } from "@/lib/types";
 
@@ -49,6 +49,30 @@ export function useDeleteAccount() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/accounts/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["accounts"] }),
+  });
+}
+
+export function useReorderAccounts() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ReorderAccountsInput) => api.patch<void>("/accounts/reorder", input),
+    // Optimistic: the drag already shows the new order in the UI, so write it
+    // straight into the cache instead of waiting on a round-trip + refetch,
+    // which would otherwise show a flash back to the old order mid-drag-end.
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: ["accounts"] });
+      const previous = queryClient.getQueryData<AccountWithBalance[]>(["accounts"]);
+      if (previous) {
+        const byId = new Map(previous.map((a) => [a.id, a]));
+        const reordered = input.orderedIds.map((id) => byId.get(id)).filter((a): a is AccountWithBalance => Boolean(a));
+        queryClient.setQueryData(["accounts"], reordered);
+      }
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous) queryClient.setQueryData(["accounts"], context.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["accounts"] }),
   });
 }
 

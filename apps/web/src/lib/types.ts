@@ -18,6 +18,7 @@ export interface Account {
   openingBalance: string;
   isActive: boolean;
   isPrimary: boolean;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
