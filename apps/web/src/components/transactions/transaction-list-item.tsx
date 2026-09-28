@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from "lucide-react";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, ArrowLeftRight } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
 import { TransactionDetailDialog } from "@/components/transactions/transaction-detail-dialog";
 import type { Transaction } from "@/lib/types";
@@ -26,10 +26,7 @@ export function TransactionListItem({ transaction }: { transaction: Transaction 
   const [open, setOpen] = useState(false);
   const Icon = TYPE_ICON[transaction.type];
   const sign = transaction.type === "INCOME" ? "+" : transaction.type === "EXPENSE" ? "-" : "";
-  const title =
-    transaction.type === "TRANSFER"
-      ? `${transaction.account.name} → ${transaction.toAccount?.name ?? "?"}`
-      : transaction.merchant || transaction.category?.name || transaction.type;
+  const title = transaction.type === "TRANSFER" ? null : transaction.merchant || transaction.category?.name || transaction.type;
   const subtitle = new Date(transaction.date).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -47,7 +44,15 @@ export function TransactionListItem({ transaction }: { transaction: Transaction 
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 overflow-hidden">
-          <p className="truncate text-sm font-medium text-neutral-900">{title}</p>
+          {transaction.type === "TRANSFER" ? (
+            <p className="flex items-center gap-1 text-sm font-medium text-neutral-900">
+              <span className="min-w-0 truncate">{transaction.account.name}</span>
+              <ArrowRight className="h-3 w-3 shrink-0 text-neutral-400" />
+              <span className="min-w-0 truncate">{transaction.toAccount?.name ?? "?"}</span>
+            </p>
+          ) : (
+            <p className="truncate text-sm font-medium text-neutral-900">{title}</p>
+          )}
           <p className="text-xs text-neutral-500">
             {subtitle}
             {transaction.type !== "TRANSFER" && transaction.category ? ` · ${transaction.category.name}` : ""}
