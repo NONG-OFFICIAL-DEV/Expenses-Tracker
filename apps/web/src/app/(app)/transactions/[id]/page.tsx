@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Copy, Loader2, Pencil, Trash2 } from "lucide-react";
 import { formatAmount } from "@/lib/shared";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTransaction, useDeleteTransaction, useDuplicateTransaction } from "@/hooks/use-transactions";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";
 
@@ -35,6 +37,7 @@ export default function TransactionDetailPage() {
   const { data: transaction, isLoading } = useTransaction(params.id);
   const deleteMutation = useDeleteTransaction();
   const duplicateMutation = useDuplicateTransaction();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isLoading || !transaction) {
     return (
@@ -46,7 +49,6 @@ export default function TransactionDetailPage() {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this transaction? This cannot be undone.")) return;
     await deleteMutation.mutateAsync(transaction!.id);
     router.push("/transactions");
   }
@@ -83,11 +85,20 @@ export default function TransactionDetailPage() {
           <Button size="icon" variant="outline" onClick={handleDuplicate}>
             <Copy className="h-4 w-4" />
           </Button>
-          <Button size="icon" variant="outline" onClick={handleDelete}>
+          <Button size="icon" variant="outline" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete transaction"
+        description="Delete this transaction? This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
 
       <div className="rounded-xl border border-neutral-200 bg-white p-4">
         <Row label="Date" value={new Date(transaction.date).toLocaleDateString()} />

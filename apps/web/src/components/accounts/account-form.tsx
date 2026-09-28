@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight } from "lucide-react";
@@ -46,87 +47,106 @@ export function AccountForm({ defaultValues, onSubmit, submitLabel = "Save", isS
 
   const type = watch("type");
   const colorValue = watch("color");
+  const iconValue = watch("icon");
   const submit = handleSubmit(onSubmit);
+  const [showAppearance, setShowAppearance] = useState(false);
 
   const previewColorHex = ACCOUNT_COLORS[colorValue ?? defaultAccountColor(type)] ?? ACCOUNT_COLORS[defaultAccountColor(type)];
+  const PreviewIconCollapsed = resolveAccountIcon({ icon: iconValue, type });
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-3 py-1">
-        <Controller
-          control={control}
-          name="icon"
-          render={({ field }) => {
-            const PreviewIcon = resolveAccountIcon({ icon: field.value, type });
-            return (
-              <div
-                className="flex h-16 w-16 items-center justify-center rounded-full"
-                style={{ backgroundColor: `${previewColorHex}26`, color: previewColorHex }}
-              >
-                <PreviewIcon className="h-7 w-7" />
-              </div>
-            );
-          }}
-        />
-
-        <Controller
-          control={control}
-          name="icon"
-          render={({ field }) => (
-            <div className="flex max-w-xs flex-wrap justify-center gap-2">
-              {ACCOUNT_ICON_KEYS.map((key) => {
-                const OptionIcon = ACCOUNT_ICONS[key];
-                const isSelected = (field.value ?? defaultAccountIcon(type)) === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => field.onChange(key)}
-                    aria-label={key}
-                    className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                      isSelected ? "text-white" : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
-                    }`}
-                    style={isSelected ? { backgroundColor: previewColorHex } : undefined}
-                  >
-                    <OptionIcon className="h-4 w-4" />
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="color"
-          render={({ field }) => (
-            <div className="flex max-w-xs flex-wrap justify-center gap-2">
-              {ACCOUNT_COLOR_KEYS.map((key) => {
-                const hex = ACCOUNT_COLORS[key];
-                const isSelected = (field.value ?? defaultAccountColor(type)) === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => field.onChange(key)}
-                    aria-label={key}
-                    className={`h-7 w-7 rounded-full transition-transform ${
-                      isSelected ? "scale-110 ring-2 ring-offset-2 ring-neutral-400" : ""
-                    }`}
-                    style={{ backgroundColor: hex }}
-                  />
-                );
-              })}
-            </div>
-          )}
-        />
-      </div>
-
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="name">Account name</Label>
         <Input id="name" {...register("name")} />
         {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
       </div>
+
+      {showAppearance ? (
+        <div className="flex flex-col items-center gap-3 py-1">
+          <Controller
+            control={control}
+            name="icon"
+            render={({ field }) => {
+              const PreviewIcon = resolveAccountIcon({ icon: field.value, type });
+              return (
+                <div
+                  className="flex h-16 w-16 items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${previewColorHex}26`, color: previewColorHex }}
+                >
+                  <PreviewIcon className="h-7 w-7" />
+                </div>
+              );
+            }}
+          />
+
+          <Controller
+            control={control}
+            name="icon"
+            render={({ field }) => (
+              <div className="flex max-w-xs flex-wrap justify-center gap-2">
+                {ACCOUNT_ICON_KEYS.map((key) => {
+                  const OptionIcon = ACCOUNT_ICONS[key];
+                  const isSelected = (field.value ?? defaultAccountIcon(type)) === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => field.onChange(key)}
+                      aria-label={key}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                        isSelected ? "text-white" : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                      }`}
+                      style={isSelected ? { backgroundColor: previewColorHex } : undefined}
+                    >
+                      <OptionIcon className="h-4 w-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="color"
+            render={({ field }) => (
+              <div className="flex max-w-xs flex-wrap justify-center gap-2">
+                {ACCOUNT_COLOR_KEYS.map((key) => {
+                  const hex = ACCOUNT_COLORS[key];
+                  const isSelected = (field.value ?? defaultAccountColor(type)) === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => field.onChange(key)}
+                      aria-label={key}
+                      className={`h-7 w-7 rounded-full transition-transform ${
+                        isSelected ? "scale-110 ring-2 ring-offset-2 ring-neutral-400" : ""
+                      }`}
+                      style={{ backgroundColor: hex }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowAppearance(true)}
+          className="flex items-center gap-2 self-start text-sm font-medium text-indigo-600 hover:text-indigo-700"
+        >
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${previewColorHex}26`, color: previewColorHex }}
+          >
+            <PreviewIconCollapsed className="h-4 w-4" />
+          </span>
+          Customize icon &amp; color
+        </button>
+      )}
 
       <div className="flex flex-col gap-1">
         <Label className="text-xs font-medium text-neutral-500">Type</Label>

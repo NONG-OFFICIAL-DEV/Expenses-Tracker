@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2, LogOut, PieChart, TrendingUp, Wallet } from "lucide-react";
+import { Loader2, LogOut, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +14,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth-context";
 import { useAccounts } from "@/hooks/use-accounts";
 import { useDashboardSummary } from "@/hooks/use-dashboard";
+import { useTransactions } from "@/hooks/use-transactions";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { CategoryChart } from "@/components/dashboard/category-chart";
 import { MonthComparison } from "@/components/dashboard/month-comparison";
+import { TransactionListItem } from "@/components/transactions/transaction-list-item";
 
 function initials(name?: string) {
   if (!name) return "?";
@@ -64,7 +65,9 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
+  const { data: recentTransactions } = useTransactions({ page: 1, pageSize: 5 });
   const currency = user?.currency ?? "USD";
+  const hasActivity = Boolean(summary && (summary.income > 0 || summary.expenses > 0 || (recentTransactions?.items.length ?? 0) > 0));
 
   const header = (
     <div className="flex items-center justify-between gap-3">
@@ -113,25 +116,41 @@ export default function DashboardPage() {
       <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto">
         {summary && <SummaryCards summary={summary} currency={currency} />}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-1.5">
-              <PieChart className="h-4 w-4 text-neutral-400" />
-              Expenses by category
-            </CardTitle>
-          </CardHeader>
-          <CardContent>{summary && <CategoryChart data={summary.categoryBreakdown} currency={currency} />}</CardContent>
-        </Card>
+        {hasActivity ? (
+          <>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-sm font-semibold text-neutral-500">Expenses by category</h2>
+              {summary && <CategoryChart data={summary.categoryBreakdown} currency={currency} />}
+            </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-neutral-400" />
-              Income vs expenses
-            </CardTitle>
-          </CardHeader>
-          <CardContent>{summary && <MonthComparison summary={summary} currency={currency} />}</CardContent>
-        </Card>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-sm font-semibold text-neutral-500">Income vs expenses</h2>
+              {summary && <MonthComparison summary={summary} currency={currency} />}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-neutral-400">
+            No transactions yet — add your first one to see spending charts here.
+          </p>
+        )}
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-neutral-500">Recent transactions</h2>
+            <Link href="/transactions" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+              View all
+            </Link>
+          </div>
+          {!recentTransactions || recentTransactions.items.length === 0 ? (
+            <p className="text-sm text-neutral-400">No transactions yet.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {recentTransactions.items.map((tx) => (
+                <TransactionListItem key={tx.id} transaction={tx} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

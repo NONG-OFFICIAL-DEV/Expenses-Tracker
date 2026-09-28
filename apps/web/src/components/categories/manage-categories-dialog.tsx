@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,6 +71,7 @@ function CategoryRow({ category, canDelete, bold }: { category: Category; canDel
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
   const [error, setError] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const updateMutation = useUpdateCategory(category.id);
   const deleteMutation = useDeleteCategory();
 
@@ -99,7 +101,6 @@ function CategoryRow({ category, canDelete, bold }: { category: Category; canDel
   }
 
   async function handleDelete() {
-    if (!confirm(`Delete "${category.name}"? Existing transactions keep their history but lose this category.`)) return;
     await deleteMutation.mutateAsync(category.id);
   }
 
@@ -155,7 +156,7 @@ function CategoryRow({ category, canDelete, bold }: { category: Category; canDel
             {canDelete && (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setDeleteOpen(true)}
                 className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -165,6 +166,15 @@ function CategoryRow({ category, canDelete, bold }: { category: Category; canDel
         )}
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete category"
+        description={`Delete "${category.name}"? Existing transactions keep their history but lose this category.`}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

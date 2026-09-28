@@ -9,6 +9,7 @@ import { resolveAccountIcon } from "@/lib/account-icons";
 import { resolveAccountColor } from "@/lib/account-colors";
 import { ACCOUNT_TYPE_LABELS } from "@/lib/account-type-labels";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +40,7 @@ export default function AccountDetailPage() {
   const deleteMutation = useDeleteAccount();
   const [editOpen, setEditOpen] = useState(false);
   const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isLoading || !account) {
     return (
@@ -52,7 +54,6 @@ export default function AccountDetailPage() {
   const colorHex = resolveAccountColor(account);
 
   async function handleDelete() {
-    if (!confirm(`Delete "${account!.name}"? This will also delete its transactions. This cannot be undone.`)) return;
     await deleteMutation.mutateAsync(account!.id);
     router.push("/accounts");
   }
@@ -101,7 +102,7 @@ export default function AccountDetailPage() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={handleDelete}
+                  onSelect={() => setDeleteOpen(true)}
                   className="text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-700"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -116,6 +117,15 @@ export default function AccountDetailPage() {
             <p className="text-3xl font-bold tabular-nums">{formatAmount(account.balance, account.currency, account.type)}</p>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title="Delete account"
+          description={`Delete "${account.name}"? This will also delete its transactions. This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+        />
 
         <div>
           <h2 className="mb-3 text-sm font-semibold text-neutral-500">Recent transactions</h2>
