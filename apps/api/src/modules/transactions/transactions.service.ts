@@ -143,7 +143,11 @@ export async function listTransactions(prisma: PrismaClient, userId: string, fil
   if (filters.dateFrom || filters.dateTo) {
     where.date = {};
     if (filters.dateFrom) where.date.gte = filters.dateFrom;
-    if (filters.dateTo) where.date.lte = filters.dateTo;
+    // Callers (e.g. the transactions page's month filter) pass dateTo as the
+    // start of the following day/month as an exclusive upper bound, not the
+    // last instant to include - lte would also match that boundary instant
+    // itself, leaking one extra day/month's transactions into the results.
+    if (filters.dateTo) where.date.lt = filters.dateTo;
   }
   if (filters.type) where.type = filters.type;
   if (filters.categoryId) where.categoryId = filters.categoryId;

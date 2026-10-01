@@ -214,7 +214,16 @@ export function TransactionForm({ defaultValues, onSubmit, submitLabel, isSubmit
   const submit = handleSubmit(async (values) => {
     setError(null);
     try {
-      await onSubmit(values);
+      // The calendar gives back a local-midnight Date for the picked day;
+      // serializing that straight to ISO shifts it by the timezone offset
+      // (e.g. a user ahead of UTC picking "Sep 1" would send "Aug 31 17:00Z"),
+      // which then gets bucketed into the wrong month by the UTC-based report
+      // queries. Re-anchor to UTC midnight of that same Y/M/D before sending.
+      const normalized = {
+        ...values,
+        date: new Date(Date.UTC(values.date.getFullYear(), values.date.getMonth(), values.date.getDate())),
+      };
+      await onSubmit(normalized);
       if (values.categoryId) recordUse(values.categoryId);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
