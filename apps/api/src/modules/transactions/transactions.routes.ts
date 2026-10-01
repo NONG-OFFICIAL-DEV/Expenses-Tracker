@@ -5,6 +5,7 @@ import { createTransactionSchema, updateTransactionSchema, transactionFiltersSch
 import * as transactionsService from "./transactions.service.js";
 
 const idParamSchema = z.object({ id: z.string().cuid() });
+const backfillQuerySchema = z.object({ offsetHours: z.coerce.number().min(-14).max(14).default(7) });
 
 export default async function transactionsRoutes(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -56,6 +57,20 @@ export default async function transactionsRoutes(fastify: FastifyInstance) {
       throw err;
     }
   });
+
+  // TEMPORARY one-time data-fix routes - see previewDateBackfill/applyDateBackfill
+  // in transactions.service.ts. Remove both once run.
+  app.get(
+    "/transactions/backfill-preview",
+    { schema: { querystring: backfillQuerySchema } },
+    async (request) => transactionsService.previewDateBackfill(fastify.prisma, request.userId, request.query.offsetHours)
+  );
+
+  app.post(
+    "/transactions/backfill-apply",
+    { schema: { querystring: backfillQuerySchema } },
+    async (request) => transactionsService.applyDateBackfill(fastify.prisma, request.userId, request.query.offsetHours)
+  );
 
   app.post("/transactions/:id/duplicate", { schema: { params: idParamSchema } }, async (request, reply) => {
     try {

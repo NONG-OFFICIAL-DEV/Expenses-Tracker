@@ -183,3 +183,40 @@ export async function listTransactions(prisma: PrismaClient, userId: string, fil
 
   return { items, total, page: filters.page, pageSize: filters.pageSize };
 }
+
+// TEMPORARY one-time data fix: transactions created before the date-timezone
+// bug was patched (the calendar's local-midnight Date serialized straight to
+// UTC, shifting the stored day for any non-UTC user) kept whatever shifted
+// date they were saved with. This re-derives each transaction's true local
+// calendar day - given the UTC-stored instant, shifting forward by the
+// user's offset recovers the local wall-clock reading, whose Y/M/D is the
+// day that should have been stored - and reports what would change (preview)
+// or applies it (apply). Remove both this and the two routes that call it
+// once the affected users have run it.
+function correctedDateFor(date: Date, offsetHours: number): Date {
+  const shifted = new Date(date.getTime() + offsetHours * 60 * 60 * 1000);
+  return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()));
+}
+
+export async function previewDateBackfill(prisma: PrismaClient, userId: string, offsetHours: number) {
+  const transactions = await prisma.transaction.findMany({
+    where: { userId },
+    select: { id: true, date: true, type: true, merchant: true, category: { select: { name: true } } },
+  });
+
+  return transactions
+    .map((tx) => ({
+      id: tx.id,
+      label: tx.merchant || tx.category?.name || tx.type,
+      oldDate: tx.date,
+      newDate: correctedDateFor(tx.date, offsetHours),
+    }))
+    .filter((row) => row.oldDate.getTime() !== row.newDate.getTime())
+    .sort((a, b) => a.oldDate.getTime() - b.oldDate.getTime());
+}
+
+export async function applyDateBackfill(prisma: PrismaClient, userId: string, offsetHours: number) {
+  const rows = await previewDateBackfill(prisma, userId, offsetHours);
+  await prisma.$transaction(rows.map((row) => prisma.transaction.update({ where: { id: row.id }, data: { date: row.newDate } })));
+  return { updated: rows.length };
+}

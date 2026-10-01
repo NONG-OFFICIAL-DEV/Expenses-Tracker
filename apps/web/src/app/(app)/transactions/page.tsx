@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, MoreVertical, Receipt, Tag } from "lucide-react";
+import { Clock, Loader2, MoreVertical, Receipt, Tag } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ManageCategoriesDialog } from "@/components/categories/manage-categories-dialog";
+import { FixDatesDialog } from "@/components/transactions/fix-dates-dialog";
 import { TransactionListItem } from "@/components/transactions/transaction-list-item";
 import { TransactionFormDialog } from "@/components/transactions/transaction-form-dialog";
 import { useRecentTransactions } from "@/hooks/use-transactions";
@@ -19,6 +20,7 @@ const ALL_TIME = "all";
 export default function TransactionsPage() {
   const { data: accounts } = useAccounts();
   const [manageCategoriesOpen, setManageCategoriesOpen] = useState(false);
+  const [fixDatesOpen, setFixDatesOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(ALL_TIME);
 
   const dateFilter = useMemo(() => {
@@ -92,12 +94,17 @@ export default function TransactionsPage() {
                 <Tag className="h-4 w-4" />
                 Manage categories
               </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setFixDatesOpen(true)}>
+                <Clock className="h-4 w-4" />
+                Fix historical dates
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       <ManageCategoriesDialog open={manageCategoriesOpen} onOpenChange={setManageCategoriesOpen} />
+      <FixDatesDialog open={fixDatesOpen} onOpenChange={setFixDatesOpen} />
 
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-neutral-500">
